@@ -5,6 +5,7 @@ site_author: Shubham
 
 theme:
   name: material
+  custom_dir: docs/overrides
   palette:
     - scheme: default
       toggle:
