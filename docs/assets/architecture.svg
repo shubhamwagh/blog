@@ -90,7 +90,7 @@
 
   <!-- ═══════════════ ARROW: Cloudflared → CF Edge ═══════════════ -->
   <line x1="470" y1="142" x2="549" y2="142" stroke="#f38020" stroke-width="1.4" marker-end="url(#ao)"/>
-  <text x="509" y="135" text-anchor="middle" fill="#f38020" font-size="8">outbound tunnel</text>
+  <text x="509" y="135" text-anchor="middle" fill="#f38020" font-size="8">tunnel</text>
 
   <!-- ═══════════════ CLOUDFLARE GROUP ═══════════════ -->
   <rect x="537" y="68" width="196" height="155" rx="8" fill="#170c03" stroke="#f38020" stroke-width="1.5"/>
