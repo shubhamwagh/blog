@@ -11,32 +11,9 @@
 
 The blog runs self-hosted on a bare-metal k3s homelab and is publicly accessible via Cloudflare Tunnel - no ports open on the home network.
 
-```mermaid
-flowchart LR
-    subgraph github["GitHub"]
-        REPO["shubhamwagh/blog\nmarkdown posts"]
-        ACTIONS["GitHub Actions\nbuild Docker image"]
-        GHCR["ghcr.io/shubhamwagh/blog\n:latest"]
-    end
-
-    subgraph cluster["k3s Cluster (LAN)"]
-        POD["blog pod\nnginx + MkDocs static site"]
-        CLOUDFLARED["cloudflared\n2 replicas"]
-    end
-
-    subgraph cf["Cloudflare"]
-        EDGE["Cloudflare Edge\nblog.shublab.com"]
-    end
-
-    INTERNET["🌐 Public Internet"]
-
-    REPO -- "git push" --> ACTIONS
-    ACTIONS -- "push image" --> GHCR
-    GHCR -- "pulled by k8s" --> POD
-    POD -- "HTTP" --> CLOUDFLARED
-    CLOUDFLARED -- "outbound tunnel\n(no open ports)" --> EDGE
-    EDGE -- "HTTPS" --> INTERNET
-```
+<p align="center">
+  <img src="docs/assets/architecture.svg" alt="Architecture diagram" width="100%"/>
+</p>
 
 ## Writing a post
 
