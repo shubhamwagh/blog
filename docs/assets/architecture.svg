@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 290" font-family="ui-monospace,SFMono-Regular,Menlo,monospace">
+  <defs>
+    <marker id="ag" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#6e7681"/>
+    </marker>
+    <marker id="ab" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#4A90D9"/>
+    </marker>
+    <marker id="ao" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#f38020"/>
+    </marker>
+    <marker id="as" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto">
+      <polygon points="0 0, 7 3, 0 6" fill="#58a6ff"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="940" height="290" rx="12" fill="#0d1117"/>
+
+  <!-- ═══════════════ GITHUB GROUP ═══════════════ -->
+  <rect x="10" y="10" width="195" height="270" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+
+  <!-- GitHub Octocat icon (14×14, simpleicons.org CC0 path, 24×24 viewBox) -->
+  <g transform="translate(80,17) scale(0.5833)" fill="#6e7681">
+    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+  </g>
+  <text x="98" y="30" fill="#6e7681" font-size="9" font-weight="700" letter-spacing="2">GITHUB</text>
+
+  <!-- Repo -->
+  <rect x="22" y="38" width="171" height="52" rx="5" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="107" y="60" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">shubhamwagh/blog</text>
+  <text x="107" y="77" text-anchor="middle" fill="#6e7681" font-size="9">markdown posts</text>
+
+  <!-- arrow Repo → Actions -->
+  <line x1="107" y1="90" x2="107" y2="108" stroke="#6e7681" stroke-width="1.2" marker-end="url(#ag)"/>
+  <text x="113" y="102" fill="#6e7681" font-size="8">git push</text>
+
+  <!-- Actions -->
+  <rect x="22" y="108" width="171" height="52" rx="5" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="107" y="130" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">GitHub Actions</text>
+  <text x="107" y="147" text-anchor="middle" fill="#6e7681" font-size="9">build Docker image</text>
+
+  <!-- arrow Actions → GHCR -->
+  <line x1="107" y1="160" x2="107" y2="178" stroke="#6e7681" stroke-width="1.2" marker-end="url(#ag)"/>
+  <text x="113" y="172" fill="#6e7681" font-size="8">push image</text>
+
+  <!-- GHCR -->
+  <rect x="22" y="178" width="171" height="52" rx="5" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="107" y="199" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">ghcr.io / blog:latest</text>
+  <text x="107" y="216" text-anchor="middle" fill="#6e7681" font-size="9">container registry</text>
+
+  <!-- ═══════════════ ARROW: GHCR → Blog Pod (L-shape) ═══════════════ -->
+  <path d="M 193 204 H 241 V 67 H 278" fill="none" stroke="#4A90D9" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#ab)"/>
+  <text x="246" y="57" fill="#4A90D9" font-size="8">k8s pull</text>
+
+  <!-- ═══════════════ K3S GROUP ═══════════════ -->
+  <rect x="265" y="10" width="218" height="185" rx="8" fill="#0a1929" stroke="#4A90D9" stroke-width="1.5"/>
+
+  <!-- k3s hexagon icon (pointy-top, 14×14, centered at 323,24) -->
+  <polygon points="323,17 329,20.5 329,27.5 323,31 317,27.5 317,20.5" fill="none" stroke="#4A90D9" stroke-width="1.2"/>
+  <text x="323" y="27" text-anchor="middle" fill="#4A90D9" font-size="5" font-weight="700">k3s</text>
+  <text x="335" y="30" fill="#4A90D9" font-size="9" font-weight="700" letter-spacing="1.5">CLUSTER · LAN</text>
+
+  <!-- Blog Pod -->
+  <rect x="278" y="38" width="192" height="60" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
+  <!-- Mini server rack (logo) with animated LEDs -->
+  <rect x="287" y="47" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="49" r="0.9" fill="#00E676">
+    <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="0s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="287" y="53.5" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="55.5" r="0.9" fill="#00E676">
+    <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="0.66s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="287" y="60" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="62" r="0.9" fill="#00E676">
+    <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="1.33s" repeatCount="indefinite"/>
+  </circle>
+  <text x="374" y="58" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">blog pod</text>
+  <text x="374" y="74" text-anchor="middle" fill="#6e7681" font-size="9">nginx · MkDocs static site</text>
+
+  <!-- arrow Blog Pod → Cloudflared -->
+  <line x1="374" y1="98" x2="374" y2="116" stroke="#4A90D9" stroke-width="1.2" marker-end="url(#ab)"/>
+  <text x="380" y="110" fill="#4A90D9" font-size="8">HTTP</text>
+
+  <!-- Cloudflared -->
+  <rect x="278" y="116" width="192" height="52" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
+  <text x="374" y="137" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">cloudflared</text>
+  <text x="374" y="154" text-anchor="middle" fill="#6e7681" font-size="9">2 replicas · outbound only</text>
+
+  <!-- ═══════════════ ARROW: Cloudflared → CF Edge ═══════════════ -->
+  <line x1="470" y1="142" x2="549" y2="142" stroke="#f38020" stroke-width="1.4" marker-end="url(#ao)"/>
+  <text x="509" y="135" text-anchor="middle" fill="#f38020" font-size="8">outbound tunnel</text>
+
+  <!-- ═══════════════ CLOUDFLARE GROUP ═══════════════ -->
+  <rect x="537" y="68" width="196" height="155" rx="8" fill="#170c03" stroke="#f38020" stroke-width="1.5"/>
+
+  <!-- Cloudflare cloud icon (simplified, ~14×10, orange) -->
+  <path d="M596,85 Q593,85 592,83 Q591,81 593,80 Q592,77 595,77 Q596,74 599,74 Q601,72 604,73 Q607,71 609,74 Q612,73 613,76 Q616,76 616,79 Q616,85 613,85 Z" fill="#f38020" opacity="0.9"/>
+  <text x="620" y="85" fill="#f38020" font-size="9" font-weight="700" letter-spacing="1.5">CLOUDFLARE</text>
+
+  <!-- CF Edge node -->
+  <rect x="551" y="100" width="168" height="100" rx="5" fill="#0f0702" stroke="#f38020" stroke-width="1"/>
+  <text x="635" y="138" text-anchor="middle" fill="#ffa657" font-size="10" font-weight="600">Cloudflare Edge</text>
+  <text x="635" y="155" text-anchor="middle" fill="#6e7681" font-size="9">blog.shublab.com</text>
+  <text x="635" y="171" text-anchor="middle" fill="#6e7681" font-size="8">TLS · no open ports on LAN</text>
+
+  <!-- ═══════════════ ARROW: CF Edge → Internet ═══════════════ -->
+  <line x1="719" y1="150" x2="790" y2="150" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#as)"/>
+  <text x="754" y="143" text-anchor="middle" fill="#58a6ff" font-size="8">HTTPS</text>
+
+  <!-- ═══════════════ INTERNET ═══════════════ -->
+  <rect x="790" y="115" width="135" height="70" rx="8" fill="#161b22" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="857" y="146" text-anchor="middle" font-size="22">🌐</text>
+  <text x="857" y="170" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="600">Public Internet</text>
+
+</svg>

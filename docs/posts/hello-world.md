@@ -6,7 +6,7 @@ categories:
 
 # Hello World
 
-Hi, I am Shubham Wagh. I work at the intersection of robotics, machine learning, and computer vision. My day to day does not involve managing Kubernetes directly - but it involves enough interaction with infra teams, and enough use of tools like SkyPilot for batch ML jobs, to make the underlying infrastructure hard to ignore.
+Hi, I am Shubham Wagh. I work at the intersection of robotics, machine learning, and computer vision. My day-to-day does not involve managing Kubernetes directly - but it involves enough interaction with infra teams, and enough use of tools like SkyPilot for batch ML jobs, to make the underlying infrastructure hard to ignore.
 
 Watching infra engineers manage GPU clusters and deployment pipelines got me curious: how does this actually work? And could I build something like it myself, at home, from scratch?
 
@@ -20,13 +20,13 @@ Building this has involved a lot of debugging and wrong turns. Writing it down f
 
 Posts will cover specific problems, setup walkthroughs, and things I picked up along the way.
 
-## Meta
+## About this blog
 
 This blog runs on the homelab. It is a [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) site served by nginx, running as a pod in the same Kubernetes cluster. It is publicly accessible via a Cloudflare tunnel - an outbound-only connection from the cluster to Cloudflare's edge, so no ports are open on my home network.
 
 Writing about self-hosted infrastructure on self-hosted infrastructure feels right.
 
-## What is coming next
+## What's coming next
 
 The next post will be a brief overview of the homelab stack - what is running and why.
 
