@@ -15,8 +15,7 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   favicon: assets/favicon.svg
-  icon:
-    logo: material/server-network
+  logo: assets/favicon.svg
   features:
     - navigation.instant
     - navigation.tracking
