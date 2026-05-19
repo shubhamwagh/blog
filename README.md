@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/favicon.svg" width="64" height="64" alt="logo"/>
+</p>
+
 # blog
 
 **Building things, breaking things, writing it down.**
