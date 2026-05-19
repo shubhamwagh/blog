@@ -1,12 +1,9 @@
 <p align="center">
-  <img src="docs/assets/favicon.svg" width="64" height="64" alt="logo"/>
+  <img src="docs/assets/favicon.svg" width="72" height="72" alt="logo"/>
+  <h1 align="center">blog</h1>
+  <p align="center"><strong>Building things, breaking things, writing it down.</strong></p>
+  <p align="center">Live at <a href="https://blog.shublab.com">blog.shublab.com</a></p>
 </p>
-
-# blog
-
-**Building things, breaking things, writing it down.**
-
-Live at [blog.shublab.com](https://blog.shublab.com)
 
 ---
 
