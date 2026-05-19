@@ -56,9 +56,9 @@
   <!-- ═══════════════ K3S GROUP ═══════════════ -->
   <rect x="265" y="10" width="218" height="185" rx="8" fill="#0a1929" stroke="#4A90D9" stroke-width="1.5"/>
 
-  <!-- k3s hexagon icon (pointy-top, 14×14, centered at 323,24) -->
-  <polygon points="323,17 329,20.5 329,27.5 323,31 317,27.5 317,20.5" fill="none" stroke="#4A90D9" stroke-width="1.2"/>
-  <text x="323" y="27" text-anchor="middle" fill="#4A90D9" font-size="5" font-weight="700">k3s</text>
+  <!-- k3s logo: flat-top hexagon (Kubernetes blue) with white k3s text -->
+  <polygon points="329,27.5 323,31 317,27.5 317,20.5 323,17 329,20.5" fill="#326CE5"/>
+  <text x="323" y="26.5" text-anchor="middle" fill="white" font-size="5.5" font-weight="700">k3s</text>
   <text x="335" y="30" fill="#4A90D9" font-size="9" font-weight="700" letter-spacing="1.5">CLUSTER · LAN</text>
 
   <!-- Blog Pod -->
