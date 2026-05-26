@@ -1,35 +1,56 @@
 ---
 date: 2026-05-19
+description: Why a robotics engineer built a bare-metal Kubernetes homelab — and started writing about it.
 categories:
   - Meta
+tags:
+  - homelab
+  - kubernetes
+  - introduction
+comments: true
 ---
 
 # Hello World
 
-Hi, I am Shubham Wagh. I work at the intersection of robotics, machine learning, and computer vision. My day-to-day does not involve managing Kubernetes directly - but it involves enough interaction with infra teams, and enough use of tools like SkyPilot for batch ML jobs, to make the underlying infrastructure hard to ignore.
+I work on the software side of robotics — machine learning, computer vision, perception pipelines. Day-to-day that means training models, wrangling datasets, and running batch jobs on GPU clusters.
 
-Watching infra engineers manage GPU clusters and deployment pipelines got me curious: how does this actually work? And could I build something like it myself, at home, from scratch?
+Managing Kubernetes is not my job. But using infrastructure is.
 
-So I started a homelab - bare-metal servers running a Kubernetes cluster, built with the same tools used in production. Not just a NAS. An actual GitOps setup with proper secrets management, TLS, VPN, monitoring, and storage redundancy.
+<!-- more -->
 
-The goal: treat it like a real system and learn by doing.
+## The itch
+
+Tools like [SkyPilot](https://skypilot.readthedocs.io/) abstract away a lot of the cluster complexity — but they don't hide it completely. Watching infra engineers debug GPU node affinity, manage secrets rotation, and wire up monitoring dashboards made me curious about what was actually happening underneath.
+
+**Could I build something like that myself, from scratch?**
+
+So I bought three HP G2 mini PCs, shoved them in a corner, and started building.
+
+## What I built
+
+Not a NAS. Not a home media server. A proper Kubernetes cluster — bare metal, GitOps, the works:
+
+- **k3s** on three nodes, provisioned with Ansible
+- **FluxCD** for GitOps — every change goes through git
+- **SOPS + age** for secrets — encrypted and committed, never plaintext
+- **Cilium** for networking, with a virtual IP for load balancing
+- **Traefik** for ingress, **cert-manager** for automatic TLS
+- **Longhorn** for distributed storage, **Prometheus + Grafana** for monitoring
+- **Headscale** (self-hosted Tailscale) for VPN access from anywhere
+
+The goal: treat it like a real production system and learn by doing.
 
 ## Why write about it
 
-Building this has involved a lot of debugging and wrong turns. Writing it down forces me to understand what I actually built, and hopefully saves someone else the same headaches.
+Building this involved a lot of debugging, wrong turns, and moments of "why does this only break at 2am." Writing forces me to actually understand what I built — and hopefully saves someone else the same headaches.
 
-Posts will cover specific problems, setup walkthroughs, and things I picked up along the way.
+Posts will cover specific problems, setup walkthroughs, and things I picked up along the way. No fluff.
 
 ## About this blog
 
-This blog runs on the homelab. It is a [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) site served by nginx, running as a pod in the same Kubernetes cluster. It is publicly accessible via a Cloudflare tunnel - an outbound-only connection from the cluster to Cloudflare's edge, so no ports are open on my home network.
-
-Writing about self-hosted infrastructure on self-hosted infrastructure feels right.
-
-## What's coming next
-
-The next post will be a brief overview of the homelab stack - what is running and why.
+!!! info "Meta"
+    This blog runs on the homelab. It is a [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) site, built by GitHub Actions and served as a pod in the same Kubernetes cluster — publicly accessible via Cloudflare DNS pointing at the cluster's Traefik ingress. Writing about self-hosted infrastructure on self-hosted infrastructure feels right.
 
 ## Follow along
 
-Subscribe via [RSS](https://blog.shublab.com/feed_rss_created.xml).
+Subscribe via [RSS](https://blog.shublab.com/feed_rss_created.xml) or leave a comment below.
