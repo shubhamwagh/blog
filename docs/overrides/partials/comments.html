@@ -1,23 +1,31 @@
 {% if page.meta.comments != false %}
 <h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
+<div id="__comments-container"></div>
 
 <script>
   /* navigation.instant swaps page content without a full reload, so a
-     plain <script src="giscus..."> only ever runs once and comments
-     silently disappear on every post reached via in-site navigation.
+     plain <script src="giscus..."> only ever ran once and comments
+     silently disappeared on every post reached via in-site navigation.
      document$ is Material's observable that fires on every instant
-     page change - tear down and re-append the giscus script each time
-     so it re-initializes for whichever post is now showing. */
+     page change - fully clear and re-create the giscus script each
+     time so it re-initializes for whichever post is now showing.
+
+     Two things the first attempt at this fix got wrong, corrected here:
+     - the script must live in its own container, never nested inside
+       the <h2> itself (a script appended as a child of the heading is
+       still valid HTML, but giscus's own iframe then also lands nested
+       inside the heading, which is not what you want structurally)
+     - removing only the OLD <script src="giscus..."> tag leaves its
+       already-inserted <iframe class="giscus-frame"> behind untouched,
+       so the previous page's stale iframe just sits there instead of
+       being replaced - container.innerHTML = "" clears both. */
   document$.subscribe(function() {
-    var container = document.getElementById("__comments")
+    var container = document.getElementById("__comments-container")
     if (!container) {
       return
     }
 
-    var existing = document.querySelector("script[src*='giscus']")
-    if (existing) {
-      existing.remove()
-    }
+    container.innerHTML = ""
 
     var script = document.createElement("script")
     script.src = "https://giscus.app/client.js"
