@@ -1,18 +1,40 @@
 {% if page.meta.comments != false %}
 <h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
-<script src="https://giscus.app/client.js"
-        data-repo="shubhamwagh/blog"
-        data-repo-id="R_kgDOSh2Phw"
-        data-category="Announcements"
-        data-category-id="DIC_kwDOSh2Ph84C9Ygj"
-        data-mapping="pathname"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="bottom"
-        data-theme="preferred_color_scheme"
-        data-lang="en"
-        crossorigin="anonymous"
-        async>
+
+<script>
+  /* navigation.instant swaps page content without a full reload, so a
+     plain <script src="giscus..."> only ever runs once and comments
+     silently disappear on every post reached via in-site navigation.
+     document$ is Material's observable that fires on every instant
+     page change - tear down and re-append the giscus script each time
+     so it re-initializes for whichever post is now showing. */
+  document$.subscribe(function() {
+    var container = document.getElementById("__comments")
+    if (!container) {
+      return
+    }
+
+    var existing = document.querySelector("script[src*='giscus']")
+    if (existing) {
+      existing.remove()
+    }
+
+    var script = document.createElement("script")
+    script.src = "https://giscus.app/client.js"
+    script.setAttribute("data-repo", "shubhamwagh/blog")
+    script.setAttribute("data-repo-id", "R_kgDOSh2Phw")
+    script.setAttribute("data-category", "Announcements")
+    script.setAttribute("data-category-id", "DIC_kwDOSh2Ph84C9Ygj")
+    script.setAttribute("data-mapping", "pathname")
+    script.setAttribute("data-strict", "0")
+    script.setAttribute("data-reactions-enabled", "1")
+    script.setAttribute("data-emit-metadata", "0")
+    script.setAttribute("data-input-position", "bottom")
+    script.setAttribute("data-theme", "preferred_color_scheme")
+    script.setAttribute("data-lang", "en")
+    script.setAttribute("crossorigin", "anonymous")
+    script.async = true
+    container.appendChild(script)
+  })
 </script>
 {% endif %}
