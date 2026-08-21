@@ -16,7 +16,7 @@ series: Building a Self-Hosted Homelab
 
 # Self-Hosting ntfy: Your Own Push Notification Server
 
-In the [last post](/how-my-k3s-homelab-works/) I walked through the moving parts of the
+In the [last post](/how-my-3-node-k3s-homelab-actually-works/) I walked through the moving parts of the
 cluster — k3s, Cilium, Traefik, cert-manager, Longhorn, Flux. This one is a concrete example
 of that architecture doing something useful: a **push-notification server** I run myself,
 called [ntfy](https://ntfy.sh).
@@ -76,7 +76,7 @@ often skip the relay entirely.
 
 ## How it runs in my homelab
 
-This is where the [architecture from the last post](/how-my-k3s-homelab-works/) pays off. ntfy
+This is where the [architecture from the last post](/how-my-3-node-k3s-homelab-actually-works/) pays off. ntfy
 is just one tiny pod that reuses the existing platform services:
 
 ```text
@@ -194,4 +194,4 @@ in sync from Git.
 ---
 
 *This is part of the [Building a Self-Hosted Homelab](/) series — the previous post was
-[How My 3-Node k3s Homelab Actually Works](/how-my-k3s-homelab-works/).*
+[How My 3-Node k3s Homelab Actually Works](/how-my-3-node-k3s-homelab-actually-works/).*
