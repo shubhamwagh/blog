@@ -1,5 +1,5 @@
 ---
-date: 2026-08-22
+date: 2026-08-21
 description: The hands-on homelab series intro — start here for what we're building, the hardware, who it's for, the honest "production-grade" limits, and the full 12-episode roadmap.
 categories:
   - Homelab
@@ -17,7 +17,7 @@ series: Building a Self-Hosted Homelab
 # Start Here: A Hands-On Homelab From 3 Mini PCs
 
 In my [first post](/hello-world/) I explained *why* I built a Kubernetes homelab out of three
-mini PCs. In the [tour post](/how-my-k3s-homelab-works/) I showed *what* it looks like once it's
+mini PCs. In the [tour post](/how-my-3-node-k3s-homelab-actually-works/) I showed *what* it looks like once it's
 running. This post is different: it's the start of a **hands-on series** where we actually *build*
 the thing, step by step, with copy-pasteable commands.
 
@@ -111,7 +111,7 @@ command* first so you understand what's happening, then point you at the shortcu
 The code snippets come straight from a real, working GitOps repo — we just simplify them and explain
 the "why" so you're not copying incantations you don't understand.
 
-Ready? Start with [episode 1: hardware and OS baseline](/hands-on-ep1-hardware-baseline/).
+Ready? The next post in the series covers [episode 1: hardware and OS baseline] — it publishes the day after this one.
 
 ---
 
