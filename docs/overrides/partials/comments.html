@@ -18,31 +18,53 @@
      - removing only the OLD <script src="giscus..."> tag leaves its
        already-inserted <iframe class="giscus-frame"> behind untouched,
        so the previous page's stale iframe just sits there instead of
-       being replaced - container.innerHTML = "" clears both. */
-  document$.subscribe(function() {
-    var container = document.getElementById("__comments-container")
-    if (!container) {
+       being replaced - container.innerHTML = "" clears both.
+
+     Third bug, found by testing a direct/hard page load in real
+     Chromium (not just a click-through from the homepage): this script
+     runs immediately, synchronously, at its position in the HTML - but
+     document$ is defined by Material's own JS bundle, which may not
+     have finished loading yet on a fresh page load (it's deferred/
+     module-loaded, so timing vs this inline script is a race, not
+     guaranteed). Losing that race throws "document$ is not defined"
+     and this whole script dies silently - giscus never gets appended
+     at all. This is NOT a rare edge case: a hard page load is exactly
+     what happens on giscus's own OAuth callback redirect
+     (?giscus=<token>), which is why signing in could make comments
+     "disappear" - the very moment giscus needs its container to still
+     be there, this script had a decent chance of never having run.
+     Fix: don't assume document$ exists - poll for it. */
+  (function initComments() {
+    if (typeof document$ === "undefined") {
+      setTimeout(initComments, 50)
       return
     }
 
-    container.innerHTML = ""
+    document$.subscribe(function() {
+      var container = document.getElementById("__comments-container")
+      if (!container) {
+        return
+      }
 
-    var script = document.createElement("script")
-    script.src = "https://giscus.app/client.js"
-    script.setAttribute("data-repo", "shubhamwagh/blog")
-    script.setAttribute("data-repo-id", "R_kgDOSh2Phw")
-    script.setAttribute("data-category", "Announcements")
-    script.setAttribute("data-category-id", "DIC_kwDOSh2Ph84C9Ygj")
-    script.setAttribute("data-mapping", "pathname")
-    script.setAttribute("data-strict", "0")
-    script.setAttribute("data-reactions-enabled", "1")
-    script.setAttribute("data-emit-metadata", "0")
-    script.setAttribute("data-input-position", "bottom")
-    script.setAttribute("data-theme", "preferred_color_scheme")
-    script.setAttribute("data-lang", "en")
-    script.setAttribute("crossorigin", "anonymous")
-    script.async = true
-    container.appendChild(script)
-  })
+      container.innerHTML = ""
+
+      var script = document.createElement("script")
+      script.src = "https://giscus.app/client.js"
+      script.setAttribute("data-repo", "shubhamwagh/blog")
+      script.setAttribute("data-repo-id", "R_kgDOSh2Phw")
+      script.setAttribute("data-category", "Announcements")
+      script.setAttribute("data-category-id", "DIC_kwDOSh2Ph84C9Ygj")
+      script.setAttribute("data-mapping", "pathname")
+      script.setAttribute("data-strict", "0")
+      script.setAttribute("data-reactions-enabled", "1")
+      script.setAttribute("data-emit-metadata", "0")
+      script.setAttribute("data-input-position", "bottom")
+      script.setAttribute("data-theme", "preferred_color_scheme")
+      script.setAttribute("data-lang", "en")
+      script.setAttribute("crossorigin", "anonymous")
+      script.async = true
+      container.appendChild(script)
+    })
+  })()
 </script>
 {% endif %}
