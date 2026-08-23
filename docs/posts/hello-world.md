@@ -2,6 +2,7 @@
 date: 2026-05-19
 description: Why a software engineer built a bare-metal Kubernetes homelab and started writing about it.
 categories:
+  - Homelab Journal
   - Meta
 tags:
   - homelab

@@ -2,6 +2,7 @@
 date: 2026-08-21 02:19:05
 description: A beginner-friendly tour of a 3-node k3s homelab — how k3s, Cilium, Traefik, cert-manager, Longhorn, and Flux fit together, with a simple architecture diagram.
 categories:
+  - Homelab Journal
   - Homelab
   - Kubernetes
 tags:

@@ -2,6 +2,7 @@
 date: 2026-08-22
 description: The boxes, the OS, and the four boring-but-mandatory steps (static IPs, SSH keys, hostnames, firewall) that make a homelab reliable. Includes the 1-node starter path and how to grow to 3.
 categories:
+  - Hands-On Tutorial
   - Homelab
   - Kubernetes
 tags:
@@ -10,7 +11,7 @@ tags:
   - k3s
   - ubuntu
 comments: true
-series: Building a Self-Hosted Homelab
+series: Homelab From Scratch (Hands-On Build)
 ---
 
 # Before you start: hardware + OS baseline
@@ -232,5 +233,5 @@ a working cluster in minutes.
 
 ---
 
-*Part of the [Building a Self-Hosted Homelab](/) series — start with [What's coming: build a
+*Part of the [Homelab From Scratch (Hands-On Build)](/) series — start with [What's coming: build a
 real homelab from 3 mini PCs](/start-here-a-hands-on-homelab-from-3-mini-pcs/).*
