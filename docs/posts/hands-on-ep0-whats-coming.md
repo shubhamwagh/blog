@@ -2,6 +2,7 @@
 date: 2026-08-21
 description: The hands-on homelab series intro — start here for what we're building, the hardware, who it's for, the honest "production-grade" limits, and the full 12-episode roadmap.
 categories:
+  - Hands-On Tutorial
   - Homelab
   - Kubernetes
 tags:

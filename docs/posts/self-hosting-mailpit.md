@@ -2,6 +2,7 @@
 date: 2026-08-22
 description: Why and how I run Mailpit in the homelab — a zero-dependency SMTP catch-all and web inbox that lets my own apps send email in dev without a real mail server, reusing the same Traefik/cert-manager stack.
 categories:
+  - Homelab Journal
   - Homelab
   - Self-Hosted Apps
 tags:
