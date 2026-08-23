@@ -2,6 +2,7 @@
 date: 2026-08-21 09:13:51
 description: Why and how I run my own push-notification server with ntfy — private, tiny, and scriptable, sitting behind the same Traefik/cert-manager/Longhorn stack as the rest of the homelab.
 categories:
+  - Homelab Journal
   - Homelab
   - Self-Hosted Apps
 tags:
