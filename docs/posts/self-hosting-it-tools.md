@@ -2,6 +2,7 @@
 date: 2026-08-23
 description: Why and how I self-host IT-Tools — a bundle of 100+ developer utilities that run entirely in your browser, so your tokens, JWTs, and payloads never leave your machine.
 categories:
+  - Homelab Journal
   - Homelab
   - Self-Hosted Apps
 tags:
