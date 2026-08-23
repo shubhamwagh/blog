@@ -10,7 +10,7 @@ tags:
   - k3s
   - ubuntu
 comments: true
-series: Building a Self-Hosted Homelab
+series: Homelab From Scratch (Hands-On Build)
 ---
 
 # Before you start: hardware + OS baseline
@@ -232,5 +232,5 @@ a working cluster in minutes.
 
 ---
 
-*Part of the [Building a Self-Hosted Homelab](/) series — start with [What's coming: build a
+*Part of the [Homelab From Scratch (Hands-On Build)](/) series — start with [What's coming: build a
 real homelab from 3 mini PCs](/start-here-a-hands-on-homelab-from-3-mini-pcs/).*

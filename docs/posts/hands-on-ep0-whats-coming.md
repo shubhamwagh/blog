@@ -11,7 +11,7 @@ tags:
   - tutorial
   - series
 comments: true
-series: Building a Self-Hosted Homelab
+series: Homelab From Scratch (Hands-On Build)
 ---
 
 # Start Here: A Hands-On Homelab From 3 Mini PCs
@@ -115,5 +115,6 @@ Ready? The next post in the series covers [episode 1: hardware and OS baseline] 
 
 ---
 
-*Part of the [Building a Self-Hosted Homelab](/) series — start with [Why I Built a Kubernetes
-Homelab](/hello-world/).*
+*This is episode 0 of the [Homelab From Scratch (Hands-On Build)](/) series — a practical,
+step-by-step companion to the separate [Building a Self-Hosted Homelab](/hello-world/) journal,
+which covers the whys and the story rather than the build steps.*
