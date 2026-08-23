@@ -17,7 +17,7 @@ series: Building a Self-Hosted Homelab
 
 # Self-Hosting Mailpit: A Dev SMTP Catch-All and Email Preview
 
-In the [last post](/self-hosting-ntfy/) I showed a self-hosted app — ntfy — dropping into the cluster and reusing the platform services I'd already built. This one is in the same spirit but solves a different, very practical problem: **how do you test that your app actually sends the right email, without wiring up a real mail server or spamming your own inbox?**
+In the [last post](/self-hosting-ntfy-your-own-push-notification-server/) I showed a self-hosted app — ntfy — dropping into the cluster and reusing the platform services I'd already built. This one is in the same spirit but solves a different, very practical problem: **how do you test that your app actually sends the right email, without wiring up a real mail server or spamming your own inbox?**
 
 The answer I run is [Mailpit](https://mailpit.axllent.org): a tiny SMTP server that accepts *any* message and shows it in a web inbox. Your app thinks it sent a real email; you get to read it in a browser. Nothing leaves the network.
 
@@ -146,4 +146,4 @@ If you've followed along with the series, you've now seen two real apps — ntfy
 
 ---
 
-*This is part of the [Building a Self-Hosted Homelab](/) series — the previous post was [Self-Hosting ntfy: Your Own Push Notification Server](/self-hosting-ntfy/).*
+*This is part of the [Building a Self-Hosted Homelab](/) series — the previous post was [Self-Hosting ntfy: Your Own Push Notification Server](/self-hosting-ntfy-your-own-push-notification-server/).*
