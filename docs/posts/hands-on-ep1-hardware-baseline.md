@@ -2,6 +2,7 @@
 date: 2026-08-22
 description: The boxes, the OS, and the four boring-but-mandatory steps (static IPs, SSH keys, hostnames, firewall) that make a homelab reliable. Includes the 1-node starter path and how to grow to 3.
 categories:
+  - Hands-On Tutorial
   - Homelab
   - Kubernetes
 tags:
