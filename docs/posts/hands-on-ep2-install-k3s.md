@@ -2,6 +2,7 @@
 date: 2026-08-23
 description: The moment the metal becomes a cluster — install k3s across 3 nodes with k3sup over SSH, grab a kubeconfig, and let Cilium take over networking. Makefile wrapper and raw commands shown side-by-side.
 categories:
+  - Hands-On Tutorial
   - Homelab
   - Kubernetes
 tags:
@@ -11,7 +12,7 @@ tags:
   - k3sup
   - cilium
 comments: true
-series: Building a Self-Hosted Homelab
+series: Homelab From Scratch (Hands-On Build)
 ---
 
 # Install k3s across 3 nodes
@@ -251,6 +252,6 @@ can reach it without port-forwarding gymnastics.
 
 ---
 
-*Part of the [Building a Self-Hosted Homelab](/) series — start with [What's coming: build a
+*Part of the [Homelab From Scratch (Hands-On Build)](/) series — start with [What's coming: build a
 real homelab from 3 mini PCs](/start-here-a-hands-on-homelab-from-3-mini-pcs/), then
 [Before you start: hardware + OS baseline](/before-you-start-hardware--os-baseline/).*
