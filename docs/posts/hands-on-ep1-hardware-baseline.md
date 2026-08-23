@@ -228,7 +228,7 @@ If all three hostnames print and all three report `active` for iscsid, your foun
 ## What's next
 
 With the metal awake, IPs pinned, and SSH working, we're ready to actually install Kubernetes.
-That's [episode 2: install k3s across 3 nodes] — we'll bootstrap k3s over SSH with k3sup and get
+That's [episode 2: install k3s across 3 nodes](/install-k3s-across-3-nodes/) — we'll bootstrap k3s over SSH with k3sup and get
 a working cluster in minutes.
 
 ---
