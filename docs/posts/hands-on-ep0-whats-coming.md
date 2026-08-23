@@ -112,7 +112,7 @@ command* first so you understand what's happening, then point you at the shortcu
 The code snippets come straight from a real, working GitOps repo — we just simplify them and explain
 the "why" so you're not copying incantations you don't understand.
 
-Ready? The next post in the series covers [episode 1: hardware and OS baseline] — it publishes the day after this one.
+Ready? The next post in the series covers [episode 1: hardware and OS baseline](/before-you-start-hardware--os-baseline/).
 
 ---
 
