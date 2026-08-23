@@ -1,6 +1,6 @@
 ---
 date: 2026-08-23
-description: The moment the metal becomes a cluster — install k3s across 3 nodes with k3sup over SSH, grab a kubeconfig, and let Cilium take over networking. Makefile wrapper and raw commands shown side-by-side.
+description: The moment the metal becomes a cluster — install k3s across 3 nodes with k3sup over SSH, grab a kubeconfig, and let Cilium take over networking. Shown as raw, copy-pasteable commands — no private repo or Makefile required.
 categories:
   - Hands-On Tutorial
   - Homelab
@@ -72,20 +72,19 @@ API port (6443).
     [k3sup](https://github.com/alexellis/k3sup) is a little Go tool from Alex Ellis. You run it
     from your laptop; it SSHes into each node, installs k3s, and writes a `kubeconfig` back to
     you. It's the difference between "I clicked through a GUI on every node" and "one command
-    provisioned the whole cluster." The `make` commands below are just a friendly wrapper around
-    it.
+    provisioned the whole cluster." You'll run k3sup directly with its own flags below — no
+    wrapper or config repo needed.
 
 ## Step 0 — Get the tools on your laptop
 
-You need two things on your **control machine** (the laptop you SSH from): `k3sup` and `kubectl`.
-The repo pins exact versions with [mise](https://mise.jdx.dev) and install them via Homebrew:
+You need three small binaries on the **control machine** (the laptop you SSH from):
 
-```bash
-# from the homeops repo root
-make tools        # runs `brew bundle` + `mise install`
-```
+- `k3sup`  — SSHes into each node and installs k3s
+- `kubectl` — talks to the cluster
+- `helm`   — installs Cilium from its chart a little later
 
-If you're not on a Mac or don't use Homebrew, install them directly:
+Install them however you like (Homebrew, apt, a direct curl — it doesn't matter for the rest of
+this episode). The direct path that works everywhere:
 
 ```bash
 # k3sup
@@ -95,70 +94,105 @@ sudo install k3sup /usr/local/bin/
 # kubectl (Linux example; pick your arch)
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install kubectl /usr/local/bin/
+
+# helm
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
-Verify both are on your `PATH`:
+Verify all three are on your `PATH`:
 
 ```bash
 k3sup version
 kubectl version --client
+helm version
 ```
 
-## Step 1 — Tell the tooling about your nodes (`make configure`)
+## Step 1 — Tell k3sup about your nodes
 
-The installer needs to know your nodes' IPs, SSH user, and a shared cluster token. The repo
-captures that in an **inventory** file via an interactive prompt:
+k3sup doesn't need an inventory file or any config repo — it takes your nodes straight from the
+command line. The cleanest way is to export a few shell variables once, then reuse them in every
+command below. Use *your* LAN IPs and SSH user (these are just placeholders):
 
 ```bash
-make configure
+export CP_IP=192.168.1.21            # control-plane node
+export WORKER1_IP=192.168.1.22       # worker 1
+export WORKER2_IP=192.168.1.23       # worker 2
+export SSH_USER=ubuntu               # the user you set up in episode 1
+export SSH_KEY=~/.ssh/id_ed25519     # your SSH private key
+export K3S_TOKEN=$(openssl rand -hex 16)   # shared secret workers use to join
 ```
 
-It will ask, one line at a time:
+That `K3S_TOKEN` is what lets workers prove they belong to the cluster. Generate it once and keep
+it in your shell for the rest of this episode.
 
-```text
-SSH user [ubuntu]:
-SSH key path [~/.ssh/id_ed25519]:
-Control-plane IPs (space-separated): 192.168.1.21
-Worker IPs (space-separated, or blank): 192.168.1.22 192.168.1.23
-Cluster name [homelab-cluster]:
-k3s token (blank = auto-generate):
-```
+!!! tip "1-node? Put one IP in CP_IP, leave the workers unset"
+    Building on a single mini PC first? Just set `CP_IP` and skip the worker exports. You'll get
+    a perfectly valid single-node k3s. To grow to 3 later, export the worker IPs and run the
+    `k3sup join` command from Step 2 for each new node — k3s joins them to the running cluster
+    with no reinstall.
 
-What it writes (both git-ignored, so they never get committed):
+## Step 2 — Install the cluster
 
-- `infrastructure/metal/inventory.yml` — the list of nodes and their SSH details.
-- `infrastructure/metal/group_vars/all.yml` — the cluster name, the shared token, and the
-  k3s feature flags below.
+Four commands. That's the whole show.
 
-The token is what lets workers prove they belong to the cluster. Leave it blank and the script
-generates a random one for you with `openssl rand -hex 16`.
-
-!!! tip "1-node? Put one IP in control-plane, leave workers blank"
-    Building the cluster on a single mini PC first? Enter just `192.168.1.21` for control-plane
-    and hit enter on the worker prompt. You'll get a perfectly valid single-node k3s. To grow to
-    three later, delete `infrastructure/metal/inventory.yml` and re-run `make configure`, or hand-edit the inventory to add the worker IPs under `workers:`, then run `make add-node` —
-    k3s joins the new workers to the existing cluster with no reinstall.
-
-## Step 2 — Install the cluster (`make bootstrap`)
-
-This is the whole show. One command:
+**1. Initialise the control-plane:**
 
 ```bash
-make bootstrap
+k3sup install \
+  --host $CP_IP \
+  --user $SSH_USER \
+  --ssh-key $SSH_KEY \
+  --k3s-extra-args "--cluster-init --token $K3S_TOKEN --tls-san $CP_IP \
+    --write-kubeconfig-mode=644 \
+    --disable=flannel,local-storage,metrics-server,servicelb,traefik \
+    --flannel-backend=none --disable-network-policy \
+    --disable-cloud-controller --disable-kube-proxy" \
+  --local-path ~/.kube/config --context homelab-cluster --merge
 ```
 
-It runs three things in order:
-
-1. **`install`** — the Ansible playbook SSHes into each node and runs `k3sup install` (control-plane)
-   and `k3sup join` (workers) over SSH.
-2. **`copy-kubeconfig`** — copies the cluster's kubeconfig off the control-plane and rewrites
-   `127.0.0.1` to the node's real IP, so `kubectl` from your laptop can reach it.
-3. **`cilium-bootstrap`** — installs Cilium (the CNI/networking layer) with Helm.
-
-Give it a minute. When it finishes, you should be able to talk to your cluster:
+**2. Join each worker** (loop over both, or run it once per node changing the host):
 
 ```bash
-make nodes          # = kubectl get nodes -o wide
+for W in $WORKER1_IP $WORKER2_IP; do
+  k3sup join \
+    --host $W \
+    --user $SSH_USER \
+    --ssh-key $SSH_KEY \
+    --server-host $CP_IP --server-user $SSH_USER \
+    --k3s-extra-args "--token $K3S_TOKEN"
+done
+```
+
+**3. Point your kubeconfig at the real node.** k3sup writes `127.0.0.1` into the kubeconfig
+server address (it assumes you run kubectl *on* the node). On macOS:
+
+```bash
+sed -i '' "s/127.0.0.1/$CP_IP/g" ~/.kube/config
+```
+
+On Linux, drop the empty `''` argument:
+
+```bash
+sed -i "s/127.0.0.1/$CP_IP/g" ~/.kube/config
+```
+
+**4. Install Cilium** (the networking layer) with Helm:
+
+```bash
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+helm install cilium cilium/cilium \
+  --namespace kube-system \
+  --set kubeProxyReplacement=true \
+  --set k8sServiceHost=$CP_IP \
+  --set k8sServicePort=6443 \
+  --set ipam.mode=cluster-pool
+```
+
+Give it a minute. Then confirm you can talk to the cluster:
+
+```bash
+kubectl get nodes -o wide
 ```
 
 You're looking for three rows, all `Ready`:
@@ -170,52 +204,27 @@ node2   Ready    <none>                 v1.32.x        192.168.1.22
 node3   Ready    <none>                 v1.32.x        192.168.1.23
 ```
 
-## What `make bootstrap` actually runs (the 3 lines that matter)
+## Why we turn k3s's built-in networking off
 
-The wrapper hides the details, but it helps to see what k3sup is really doing on each node.
-
-**Control-plane (init node):**
-
-```bash
-k3sup install \
-  --host 192.168.1.21 \
-  --user ubuntu \
-  --ssh-key ~/.ssh/id_ed25519 \
-  --k3s-extra-args '--cluster-init --token <TOKEN> --tls-san 192.168.1.21 \
-    --write-kubeconfig-mode=644 \
-    --disable=flannel,local-storage,metrics-server,servicelb,traefik \
-    --flannel-backend=none --disable-network-policy \
-    --disable-cloud-controller --disable-kube-proxy' \
-  --local-path ~/.kube/config --context homelab-cluster --merge
-```
-
-**Workers (join the control-plane):**
-
-```bash
-k3sup join \
-  --host 192.168.1.22 \
-  --user ubuntu \
-  --ssh-key ~/.ssh/id_ed25519 \
-  --server-host 192.168.1.21 \
-  --server-user ubuntu \
-  --k3s-extra-args '--token <TOKEN>'
-```
-
-Two flags deserve a callout, because they shape everything later:
+Two flags in that install command shape everything later, so they're worth a look:
 
 - **`--disable=flannel,...,traefik --disable-kube-proxy --flannel-backend=none`** — we *deliberately*
   turn k3s's built-in networking (flannel), service load-balancer, and ingress (traefik) **off**.
   Why? Because we're going to install **Cilium** as the networking layer and **Traefik** as the
   ingress later, and running two of everything causes fights. Starting clean is the point.
 - **`--cluster-init`** on the first control-plane — it tells k3s "you're the first server; others
-  will join you." (The repo always passes `--cluster-init` to the init node — including a single-node cluster — so you don't toggle anything.)
+  will join you." (We always pass `--cluster-init` to the init node — including a single-node
+  cluster — so you don't toggle anything.)
 
 !!! info "Going further: what Cilium actually does"
-    `cilium-bootstrap` installs Cilium with `kubeProxyReplacement=true` and eBPF-based masquerade.
-    In plain terms: Cilium handles pod networking, load-balancing, and network policy *in the
-    Linux kernel* instead of via kube-proxy's iptables rules. That's faster and lets us do fancy
-    things later (like giving a service a LAN IP). You don't need to understand eBPF today — just
-    know that `make bootstrap` wired it in so the cluster has working networking from minute one.
+    The `helm install cilium` above deploys Cilium with `kubeProxyReplacement=true` and eBPF-based
+    masquerade. In plain terms: Cilium handles pod networking, load-balancing, and network policy
+    *in the Linux kernel* instead of via kube-proxy's iptables rules. That's faster and lets us do
+    fancy things later (like giving a service a LAN IP). You don't need to understand eBPF today —
+    just know it wired the cluster's networking in from minute one. Episode 3 goes deeper.
+
+    (For reference: my own HomeOps repo wraps these exact steps in a `make bootstrap` target for
+    repeat, automated runs — but you don't need it; the raw commands above are everything.)
 
 ## Verify before you celebrate
 
@@ -231,17 +240,18 @@ A healthy cluster: 3 `Ready` nodes, and the `kube-system` / `cilium` pods all `R
 
 ## Common mistakes
 
-- **Wrong SSH key path in `make configure`** — if k3sup can't authenticate, the install hangs or
-  fails fast. Double-check the path it printed and that `ssh node1` works from your laptop first.
-- **Forgetting the worker IPs** — if you leave workers blank by accident, you get a 1-node cluster
-  and wonder why `kubectl get nodes` shows one row. Re-run `make configure` (delete the inventory
-  it wrote, or hand-edit it) and `make add-node`.
+- **Wrong SSH key path** — if k3sup can't authenticate, the install hangs or fails fast.
+  Double-check `SSH_KEY` points at a key whose public half is on every node, and that
+  `ssh -i $SSH_KEY $SSH_USER@$CP_IP` works from your laptop first.
+- **Forgetting the worker IPs** — if you leave the workers unset by accident, you get a 1-node
+  cluster and wonder why `kubectl get nodes` shows one row. Just export the worker IPs and run
+  the `k3sup join` loop from Step 2 for the missing nodes.
 - **Nodes not `Ready`** — 9 times out of 10 this is the OS baseline from the previous post:
   missing iSCSI (Longhorn will complain later, not now), or the host firewall fighting Cilium.
   Re-check ep1's Step 3.
-- **Two networking stacks** — if you ever re-run bootstrap without the `--disable` flags, you'll
-  have flannel *and* Cilium both trying to own pod networking. That's a world of packet loss. The
-  repo's flags already disable flannel, so don't add it back.
+- **Two networking stacks** — if you ever re-run the install without the `--disable` flags, you'll
+  have flannel *and* Cilium both trying to own pod networking. That's a world of packet loss.
+  Keep the `--disable` flags as shown.
 
 ## What's next
 
