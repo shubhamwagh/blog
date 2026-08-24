@@ -37,32 +37,19 @@ runs on a Raspberry Pi-class box and still speaks real Kubernetes.
 
 The architecture we're aiming for:
 
-```text
-        ┌─────────────┐
-        │  Router     │  192.168.1.1
-        │   (LAN)     │
-        └──────┬──────┘
-               │
-        ┌──────▼──────┐        k3s API (6443)
-        │  node1      │◄───────────────┐
-        │  control-   │                │
-        │  plane      │                │
-        │   .21       │                │
-        └─────────────┘                │
-              ▲                        │
-       k3s API│                        │
-              ├───────────────►┌───────┴──────┐
-              │                │  node2        │
-              │                │  worker       │
-              │                │   .22         │
-              │                └───────────────┘
-              │                ┌───────────────┐
-              └───────────────►│  node3        │
-                               │  worker       │
-                               │   .23         │
-                               └───────────────┘
-         (all on 192.168.1.0/24 — illustrative; use your LAN)
+```mermaid
+flowchart TB
+    R["Router (LAN)<br/>192.168.1.1"]
+    N1["node1<br/>control-plane<br/>.21"]
+    N2["node2<br/>worker<br/>.22"]
+    N3["node3<br/>worker<br/>.23"]
+    R --> N1
+    R --> N2
+    R --> N3
+    N1 <-->|"k3s API :6443"| N2
+    N1 <-->|"k3s API :6443"| N3
 ```
+*(all on 192.168.1.0/24 — illustrative; use your LAN)*
 
 One node is the **control-plane** (it runs the API server + scheduler). The other two are
 **workers** (they run your actual workloads). The workers "join" the control-plane over the k3s

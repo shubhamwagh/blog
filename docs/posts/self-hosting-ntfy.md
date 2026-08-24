@@ -48,10 +48,10 @@ script can notify you with a single `curl`.
 ntfy is, at its heart, **publish/subscribe where a topic is just a URL path**. There's no broker
 config and no topic provisioning.
 
-```text
-   publish                        subscribe
-scripts/app ──POST body──▶  ntfy server  ──▶  phone app (UnifiedPush)
-curl -d "msg" https://ntfy.example.com/cartopic
+```mermaid
+flowchart LR
+    A["script/app"] -->|"POST body<br/><small>curl -d 'msg' https://ntfy.example.com/cartopic</small>"| B[ntfy server]
+    B -->|subscribe| C["phone app<br/>(UnifiedPush)"]
 ```
 
 - **Publish:** `POST https://ntfy.example.com/<topic>` with your message as the body.
@@ -80,19 +80,12 @@ often skip the relay entirely.
 This is where the [architecture from the last post](/how-my-3-node-k3s-homelab-actually-works/) pays off. ntfy
 is just one tiny pod that reuses the existing platform services:
 
-```text
-   Internet
-      │
-      ▼
-   Cloudflare (DNS + proxy)     ← hides the home IP
-      │
-      ▼
-   Traefik (ingress)            ← routes ntfy.example.com
-      │
-      ▼
-   ntfy pod  (single replica)
-      │
-      └─▶ Longhorn volume       ← stores cache + auth database
+```mermaid
+flowchart TD
+    A[Internet] --> B["Cloudflare (DNS + proxy)<br/><small>hides the home IP</small>"]
+    B --> C["Traefik (ingress)<br/><small>routes ntfy.example.com</small>"]
+    C --> D["ntfy pod<br/><small>single replica</small>"]
+    D --> E["Longhorn volume<br/><small>stores cache + auth database</small>"]
 ```
 
 It sits in its own namespace, uses a **Longhorn** persistent volume for its cache and auth
