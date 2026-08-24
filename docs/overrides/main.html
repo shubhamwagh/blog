@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block analytics %}
+  {{ super() }}
+  {#
+    Self-hosted Umami. data-auto-track="false" + a manual umami.track()
+    call on document$ (Material's own observable, fires on every
+    navigation.instant route change AND the initial load) - same fix
+    class as the giscus document$ race condition documented in
+    partials/comments.html. Without this, Umami's own SPA-detection
+    heuristics and Material's instant-navigation history.pushState
+    usage aren't guaranteed to line up, and in-site navigations could
+    silently stop counting after the first page.
+  #}
+  <script defer src="https://umami.shublab.com/script.js" data-website-id="619386f8-2b59-47a6-93e5-bbce566f7180" data-auto-track="false"></script>
+  <script>
+    document$.subscribe(function () {
+      if (window.umami) {
+        window.umami.track();
+      }
+    })
+  </script>
+{% endblock %}
