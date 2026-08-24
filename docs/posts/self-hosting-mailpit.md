@@ -42,15 +42,13 @@ Mailpit collapses all of that into one container: it pretends to be an SMTP serv
 
 Mailpit is, at its heart, **an SMTP server that delivers nowhere**. It accepts mail on the standard SMTP port, stores it in memory, and serves it through a web interface.
 
-```text
-   your app (dev)                Mailpit
-   sends email ──SMTP 1025──▶  accepts ANY message
-                                 │
-                                 ▼
-                            stores in memory
-                                 │
-                                 ▼
-   you ──browse──▶  web UI :8025  ◀── see the message, headers, body, attachments
+```mermaid
+flowchart LR
+    A["your app (dev)"] -->|"sends email<br/>SMTP :1025"| B["Mailpit<br/>accepts ANY message"]
+    B --> C[stores in memory]
+    D[you] -->|browse| E["web UI :8025"]
+    C --> E
+    E -.->|"see the message,<br/>headers, body, attachments"| D
 ```
 
 - **Send:** point your app's SMTP host at `mailpit.example.com` (or the in-cluster service) on port `1025`. No real credentials needed — it accepts any auth.
@@ -63,19 +61,12 @@ That's the whole interface. If it can speak SMTP, it can deliver into Mailpit.
 
 This is where the [architecture I described earlier](/how-my-3-node-k3s-homelab-actually-works/) pays off again. Mailpit is just one small pod that reuses the existing platform services:
 
-```text
-   Internet
-      │
-      ▼
-   Cloudflare (DNS + proxy)     ← hides the home IP
-      │
-      ▼
-   Traefik (ingress)            ← routes mailpit.example.com, TLS via cert-manager
-      │
-      ▼
-   Mailpit pod  (single replica)
-      │
-      └─▶ in-memory message store   ← no PVC needed
+```mermaid
+flowchart TD
+    A[Internet] --> B["Cloudflare (DNS + proxy)<br/><small>hides the home IP</small>"]
+    B --> C["Traefik (ingress)<br/><small>routes mailpit.example.com, TLS via cert-manager</small>"]
+    C --> D["Mailpit pod<br/><small>single replica</small>"]
+    D --> E["in-memory message store<br/><small>no PVC needed</small>"]
 ```
 
 It sits in its own namespace, has **no persistent volume** (messages live in memory and are lost on restart — which is exactly what you want for a dev catch-all), is exposed through **Traefik** with automatic TLS from **cert-manager** (the same Let's Encrypt wildcard as everything else), and Cloudflare sits in front so my home IP stays hidden.

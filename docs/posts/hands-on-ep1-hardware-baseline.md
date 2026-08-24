@@ -50,20 +50,13 @@ final episode).
 
 Here's the shape of the target cluster (IPs are illustrative — use whatever your LAN gives you):
 
-```text
-        ┌─────────────┐
-        │  Router     │  192.168.1.1
-        │   (LAN)     │
-        └──────┬──────┘
-     ┌─────────┼─────────┐
-     ▼         ▼         ▼
-  ┌──────┐  ┌──────┐  ┌──────┐
-  │node1 │  │node2 │  │node3 │
-  │ ctrl │  │worker│  │worker│
-  │ .21  │  │ .22  │  │ .23  │
-  └──────┘  └──────┘  └──────┘
-   (all on 192.168.1.0/24)
+```mermaid
+flowchart TB
+    R["Router (LAN)<br/>192.168.1.1"] --> N1["node1<br/>ctrl<br/>.21"]
+    R --> N2["node2<br/>worker<br/>.22"]
+    R --> N3["node3<br/>worker<br/>.23"]
 ```
+*(all on 192.168.1.0/24)*
 
 ## Step 0 — Install the OS
 
