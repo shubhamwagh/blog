@@ -28,6 +28,7 @@ theme:
 
 plugins:
   - search
+  - social
   - rss:
       match_path: posts/.*
       date_from_meta:
