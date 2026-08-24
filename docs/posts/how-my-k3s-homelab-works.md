@@ -51,20 +51,12 @@ one box.
 
 Let's follow a single web request, because that path touches most of the stack.
 
-```text
-   Internet
-      │
-      ▼
-   Cloudflare (DNS + proxy)      ← hides your home IP; you point the domain here
-      │   request for blog.example.com
-      ▼
-   Cilium load balancer          ← hands out a LAN IP to in-cluster services
-      │
-      ▼
-   Traefik  (ingress)            ← reads the hostname, picks the right app
-      │
-      ▼
-   Your app pod  (e.g. the blog)
+```mermaid
+flowchart TD
+    A[Internet] --> B["Cloudflare (DNS + proxy)<br/><small>hides your home IP; you point the domain here</small>"]
+    B -->|"request for blog.example.com"| C["Cilium load balancer<br/><small>hands out a LAN IP to in-cluster services</small>"]
+    C --> D["Traefik (ingress)<br/><small>reads the hostname, picks the right app</small>"]
+    D --> E["Your app pod<br/><small>e.g. the blog</small>"]
 ```
 
 Here is what each hop does:
@@ -124,17 +116,15 @@ All the configuration — what apps exist, what images they use, what ingress ro
 in a **Git repository**. A tool called **Flux** runs inside the cluster, watches that repo, and
 continuously makes the cluster match it.
 
-```text
-   Git repo (the source of truth)
-        │  Flux reads it
-        ▼
-   Flux applies changes in stages:
-        infrastructure   →  core platforms (CNI, ingress, storage, TLS)
-        infrastructure-config → settings for those platforms
-        apps             →  the actual applications
-        │
-        ▼
-   Kubernetes cluster (always converging toward the Git state)
+```mermaid
+flowchart TD
+    A["Git repo<br/><small>the source of truth</small>"] -->|Flux reads it| B[Flux applies changes in stages]
+    B --> C["infrastructure<br/><small>core platforms: CNI, ingress, storage, TLS</small>"]
+    B --> D["infrastructure-config<br/><small>settings for those platforms</small>"]
+    B --> E["apps<br/><small>the actual applications</small>"]
+    C --> F["Kubernetes cluster<br/><small>always converging toward the Git state</small>"]
+    D --> F
+    E --> F
 ```
 
 This pattern is called **GitOps**. The benefits are practical:
@@ -154,20 +144,18 @@ This pattern is called **GitOps**. The benefits are practical:
 
 Zooming out, the whole system is a loop:
 
-```text
-   You write config ──▶ Git repo
-                              │
-                        Flux (watches)
-                              │
-                              ▼
-                   k3s cluster
-                      ├─ Cilium      (network + load balancer)
-                      ├─ Traefik     (ingress / routing)
-                      ├─ cert-manager (TLS)
-                      ├─ Longhorn    (storage)
-                      └─ your apps
+```mermaid
+flowchart TD
+    A[You write config] --> B[Git repo]
+    B --> C["Flux (watches)"]
+    C --> D[k3s cluster]
+    D --> D1["Cilium<br/><small>network + load balancer</small>"]
+    D --> D2["Traefik<br/><small>ingress / routing</small>"]
+    D --> D3["cert-manager<br/><small>TLS</small>"]
+    D --> D4["Longhorn<br/><small>storage</small>"]
+    D --> D5[your apps]
 
-   Internet ──▶ Cloudflare ──▶ Cilium IP ──▶ Traefik ──▶ app
+    I[Internet] --> CF[Cloudflare] --> CI["Cilium IP"] --> TR[Traefik] --> AP[app]
 ```
 
 Each layer has one job. Cilium moves packets, Traefik routes by name, cert-manager keeps TLS
