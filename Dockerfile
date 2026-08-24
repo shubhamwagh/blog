@@ -9,3 +9,4 @@ RUN mkdocs build
 
 FROM nginx:alpine
 COPY --from=builder /src/site /usr/share/nginx/html
+COPY docker/default.conf /etc/nginx/conf.d/default.conf
