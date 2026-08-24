@@ -49,12 +49,12 @@
   <text x="107" y="199" text-anchor="middle" fill="#58a6ff" font-size="10" font-weight="600">ghcr.io / blog:latest</text>
   <text x="107" y="216" text-anchor="middle" fill="#6e7681" font-size="9">container registry</text>
 
-  <!-- ═══════════════ ARROW: GHCR → Blog Pod (L-shape) ═══════════════ -->
-  <path d="M 193 204 H 241 V 67 H 278" fill="none" stroke="#4A90D9" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#ab)"/>
-  <text x="246" y="57" fill="#4A90D9" font-size="8">k8s pull</text>
+  <!-- ═══════════════ ARROW: GHCR → Blog Pod (L-shape, blog pod now at bottom of k3s group) ═══════════════ -->
+  <path d="M 193 204 H 241 V 192 H 278" fill="none" stroke="#4A90D9" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#ab)"/>
+  <text x="246" y="182" fill="#4A90D9" font-size="8">k8s pull</text>
 
   <!-- ═══════════════ K3S GROUP ═══════════════ -->
-  <rect x="265" y="10" width="218" height="185" rx="8" fill="#0a1929" stroke="#4A90D9" stroke-width="1.5"/>
+  <rect x="265" y="10" width="218" height="230" rx="8" fill="#0a1929" stroke="#4A90D9" stroke-width="1.5"/>
 
   <!-- k3s logo (simpleicons, #FFC61D, 24×24 viewBox scaled to 14×14) -->
   <g transform="translate(316,17) scale(0.5833)" fill="#FFC61D">
@@ -62,36 +62,46 @@
   </g>
   <text x="335" y="30" fill="#4A90D9" font-size="9" font-weight="700" letter-spacing="1.5">CLUSTER · LAN</text>
 
-  <!-- Blog Pod -->
-  <rect x="278" y="38" width="192" height="60" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
+  <!-- Cloudflared (moved to top - it's the entry point coming FROM the tunnel) -->
+  <rect x="278" y="38" width="192" height="46" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
+  <text x="374" y="57" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">cloudflared</text>
+  <text x="374" y="73" text-anchor="middle" fill="#6e7681" font-size="9">2 replicas · outbound only</text>
+
+  <!-- arrow Cloudflared → Traefik -->
+  <line x1="374" y1="84" x2="374" y2="102" stroke="#4A90D9" stroke-width="1.2" marker-end="url(#ab)"/>
+  <text x="380" y="96" fill="#4A90D9" font-size="8">HTTPS :443</text>
+
+  <!-- Traefik (real fix, 2026-08-24: cloudflared targets this, not the blog pod directly) -->
+  <rect x="278" y="102" width="192" height="46" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
+  <text x="374" y="121" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">Traefik</text>
+  <text x="374" y="137" text-anchor="middle" fill="#6e7681" font-size="9">Host-routes blog.shublab.com</text>
+
+  <!-- arrow Traefik → Blog Pod -->
+  <line x1="374" y1="148" x2="374" y2="166" stroke="#4A90D9" stroke-width="1.2" marker-end="url(#ab)"/>
+  <text x="380" y="160" fill="#4A90D9" font-size="8">/*</text>
+
+  <!-- Blog Pod (moved to bottom - it's what Traefik routes to) -->
+  <rect x="278" y="166" width="192" height="58" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
   <!-- Mini server rack (logo) with animated LEDs -->
-  <rect x="287" y="47" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
-  <circle cx="290.5" cy="49" r="0.9" fill="#00E676">
+  <rect x="287" y="174" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="176" r="0.9" fill="#00E676">
     <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="0s" repeatCount="indefinite"/>
   </circle>
-  <rect x="287" y="53.5" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
-  <circle cx="290.5" cy="55.5" r="0.9" fill="#00E676">
+  <rect x="287" y="180.5" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="182.5" r="0.9" fill="#00E676">
     <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="0.66s" repeatCount="indefinite"/>
   </circle>
-  <rect x="287" y="60" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
-  <circle cx="290.5" cy="62" r="0.9" fill="#00E676">
+  <rect x="287" y="187" width="15" height="4" rx="0.6" fill="none" stroke="#4A90D9" stroke-width="0.8"/>
+  <circle cx="290.5" cy="189" r="0.9" fill="#00E676">
     <animate attributeName="opacity" values="1;0.1;1" dur="2s" begin="1.33s" repeatCount="indefinite"/>
   </circle>
-  <text x="374" y="58" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">blog pod</text>
-  <text x="374" y="74" text-anchor="middle" fill="#6e7681" font-size="9">nginx · MkDocs static site</text>
+  <text x="374" y="190" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">blog pod</text>
+  <text x="374" y="204" text-anchor="middle" fill="#6e7681" font-size="9">nginx · MkDocs static site</text>
+  <text x="374" y="217" text-anchor="middle" fill="#6e7681" font-size="7.5">Traefik also routes /stats/* → Umami (LAN-only)</text>
 
-  <!-- arrow Blog Pod → Cloudflared -->
-  <line x1="374" y1="98" x2="374" y2="116" stroke="#4A90D9" stroke-width="1.2" marker-end="url(#ab)"/>
-  <text x="380" y="110" fill="#4A90D9" font-size="8">HTTP</text>
-
-  <!-- Cloudflared -->
-  <rect x="278" y="116" width="192" height="52" rx="5" fill="#071221" stroke="#4A90D9" stroke-width="1"/>
-  <text x="374" y="137" text-anchor="middle" fill="#79c0ff" font-size="10" font-weight="600">cloudflared</text>
-  <text x="374" y="154" text-anchor="middle" fill="#6e7681" font-size="9">2 replicas · outbound only</text>
-
-  <!-- ═══════════════ ARROW: Cloudflared → CF Edge ═══════════════ -->
-  <line x1="470" y1="142" x2="549" y2="142" stroke="#f38020" stroke-width="1.4" marker-end="url(#ao)"/>
-  <text x="509" y="135" text-anchor="middle" fill="#f38020" font-size="8">tunnel</text>
+  <!-- ═══════════════ ARROW: Cloudflared → CF Edge (L-shape, cloudflared now at top of k3s group) ═══════════════ -->
+  <path d="M 470 61 H 505 V 150 H 549" fill="none" stroke="#f38020" stroke-width="1.4" marker-end="url(#ao)"/>
+  <text x="509" y="105" fill="#f38020" font-size="8">tunnel</text>
 
   <!-- ═══════════════ CLOUDFLARE GROUP ═══════════════ -->
   <rect x="537" y="68" width="196" height="155" rx="8" fill="#170c03" stroke="#f38020" stroke-width="1.5"/>
