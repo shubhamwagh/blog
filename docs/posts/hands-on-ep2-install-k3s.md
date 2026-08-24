@@ -243,8 +243,7 @@ A healthy cluster: 3 `Ready` nodes, and the `kube-system` / `cilium` pods all `R
 ## What's next
 
 You have a real, multi-node Kubernetes cluster in your living room. But right now it's just
-infrastructure with no *story* — no GitOps, no ingress, no apps. In [episode 3: networking with
-Cilium + a load-balancer VIP] we'll go deeper on Cilium and give a service a real LAN IP so you
+infrastructure with no *story* — no GitOps, no ingress, no apps. In [episode 3: networking with Cilium + a load-balancer VIP](/networking-with-cilium--a-load-balancer-vip/) we'll go deeper on Cilium and give a service a real LAN IP so you
 can reach it without port-forwarding gymnastics.
 
 ---
