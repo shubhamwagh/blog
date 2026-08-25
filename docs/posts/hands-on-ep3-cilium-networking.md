@@ -232,7 +232,7 @@ flowchart LR
 A working CNI and a cluster where any `LoadBalancer` Service gets a real, LAN-reachable IP for
 free. That VIP is what Traefik, Longhorn, and every app we deploy later will hang off.
 
-Next up: [episode 4: GitOps with Flux: let git run your cluster] — we'll make the cluster
+Next up: [episode 4: GitOps with Flux: let git run your cluster](/gitops-with-flux-let-git-run-your-cluster/) — we'll make the cluster
 reconcile itself from a Git repo so none of this config is handwritten on a single node ever
 again.
 
