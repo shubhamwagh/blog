@@ -410,7 +410,7 @@ A cluster that reconciles itself from git. Every change from here on — ingress
 is a pull request with review and history, and a wiped node rebuilds itself instead of becoming
 a weekend.
 
-Next up: [episode 5: Ingress + free TLS: Traefik & cert-manager] — we'll put a real reverse proxy
+Next up: [episode 5: Ingress + free TLS: Traefik & cert-manager](/ingress--free-tls-traefik--cert-manager/) — we'll put a real reverse proxy
 in front of these apps and hand them free Let's Encrypt certificates, all defined in git.
 
 ---
