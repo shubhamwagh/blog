@@ -484,7 +484,7 @@ Open `https://traefik.example.com` and you should get a valid certificate and a 
     Any app can reuse the same wildcard cert: create an `IngressRoute` (or a standard `Ingress`)
     in the app's namespace with `tls.secretName: example-com-wildcard-tls` — and because Reflector
     already copied that Secret into the namespace, it just works. No per-app cert request needed.
-    In [episode 6: distributed storage with Longhorn] and the capstone we'll stand up real apps this way.
+    In [episode 6: distributed storage with Longhorn](/distributed-storage-with-longhorn/) and the capstone we'll stand up real apps this way.
 
 ## Common mistakes
 
@@ -519,7 +519,7 @@ free, auto-renewing wildcard certificate, and Reflector keeps that cert availabl
 needed. From here, deploying an app means "write a Deployment + an IngressRoute that points at the
 wildcard cert" — no manual cert work ever again.
 
-Next up: [episode 6: distributed storage with Longhorn] — we'll give those apps somewhere persistent
+Next up: [episode 6: distributed storage with Longhorn](/distributed-storage-with-longhorn/) — we'll give those apps somewhere persistent
 to store data that survives a pod restart.
 
 ---
