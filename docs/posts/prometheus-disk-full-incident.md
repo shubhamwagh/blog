@@ -49,7 +49,7 @@ flowchart TD
     A[Targets scraped<br/>nodes, pods, apps] --> B[Prometheus TSDB]
     B -->|writes samples| C[(PVC / Longhorn volume)]
     C -.->|if full: writes stop| D[No new samples]
-    D --> E[Grafana still shows old data<br/>"looks fine"]
+    D --> E["Grafana still shows old data<br/>#quot;looks fine#quot;"]
     D --> F[Alerts have nothing to fire on]
 ```
 
