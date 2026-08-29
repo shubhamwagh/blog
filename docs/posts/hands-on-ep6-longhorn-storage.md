@@ -413,7 +413,7 @@ replicated storage, which is most of what "production-ish" means for a homelab.
 
 ## What's next
 
-Next up: [episode 7: secrets without plaintext — SOPS + age]. Right now any password we put
+Next up: [episode 7: secrets without plaintext — SOPS + age](/secrets-without-plaintext-sops--age/). Right now any password we put
 in a manifest is visible to anyone with the git repo. We'll fix that by encrypting secrets
 *in* git with age, so the cluster can read them but the world can't.
 
