@@ -266,4 +266,4 @@ cluster. Your Git history holds only ciphertext.
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — continue with
 [episode 6: distributed storage with Longhorn](/distributed-storage-with-longhorn/). Next up:
-[episode 8: remote access with Headscale].*
+[episode 8: remote access with Headscale](/remote-access-headscale-self-hosted-tailscale/)
