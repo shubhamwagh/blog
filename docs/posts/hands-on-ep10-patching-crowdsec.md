@@ -251,9 +251,7 @@ The token is written to an `emptyDir` volume shared between the init container a
 Renovate container, exported as `RENOVATE_TOKEN` before Renovate starts, and expires in about an
 hour regardless. No static credential in a Secret, no PRs under a personal account.
 
-This is the same pattern described in the [HomeOps token broker](/remote-access-headscale-self-hosted-tailscale/)
-episode — a dedicated ServiceAccount identity checked by the broker's TokenReview allowlist, not a
-shared default SA.
+This is the same pattern behind the [credential-protection approach from the SOPS + age episode](/secrets-without-plaintext-sops--age/) — a dedicated ServiceAccount identity checked by the broker's TokenReview allowlist, not a shared default SA.
 
 ### What Renovate actually scans
 
