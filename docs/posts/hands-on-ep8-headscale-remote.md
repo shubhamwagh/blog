@@ -412,4 +412,4 @@ public URL — a nice example of the cluster and the VPS cooperating. Treat it a
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — previous:
 [Secrets without plaintext: SOPS + age](/secrets-without-plaintext-sops--age/). Next up:
-[episode 9: monitoring that pages you (Prometheus + Grafana + ntfy)].*
+[episode 9: monitoring that pages you (Prometheus + Grafana + ntfy)](/monitoring-that-pages-you-prometheus--grafana--ntfy/)
