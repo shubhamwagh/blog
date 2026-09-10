@@ -298,4 +298,4 @@ That's the difference between "a cluster" and "a cluster I can trust overnight."
 ---
 
 **Previous:** [Remote access: Headscale (self-hosted Tailscale)](/remote-access-headscale-self-hosted-tailscale/)
-**Next up:** [episode 10: Keeping it patched & safe — Renovate, Reloader, CrowdSec] (coming soon)
+**Next up:** [episode 10: Keeping it patched & safe — Renovate, Reloader, CrowdSec](/keeping-it-patched--safe-renovate-reloader-crowdsec/)
