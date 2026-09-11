@@ -272,8 +272,7 @@ kubectl create secret generic cloudflare-api-token \
   --from-literal=api-token='«your-cloudflare-dns-token»'
 ```
 
-*(That's a placeholder — paste your own token, and never commit the literal value to git. In
-[episode 7: secrets without plaintext (SOPS + age)] we'll encrypt secrets like this with SOPS + age so they
+*(That's a placeholder — paste your own token, and never commit the literal value to git. In [episode 7: secrets without plaintext (SOPS + age)](/secrets-without-plaintext-sops--age/) we'll encrypt secrets like this with SOPS + age so they
 *can* live in git safely.)*
 
 ```yaml
