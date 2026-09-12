@@ -277,7 +277,7 @@ spec:
 
 - `port: 80` — the Service's port, what other pods and the Ingress talk to.
 - `targetPort: http` — the named port from the Deployment's container (`containerPort: 8080`, named `http`). Using a named target port is more robust than a bare number: if you change the container port later, the Service still works as long as the name stays the same.
-- No `type: LoadBalancer` or `nodePort` — Traefik will route to this Service through the Ingress. The LAN-only pattern from episode 3 means most of your apps are reached via the Cilium VIP (`192.168.1.0/24` in your setup) through Traefik, not directly via a LoadBalancer IP.
+- No `type: LoadBalancer` or `nodePort` — Traefik will route to this Service through the Ingress. The LAN-only pattern from episode 3 means most of your apps are reached via the Cilium VIP (your LAN subnet, e.g. `192.168.1.0/24`, in your setup) through Traefik, not directly via a LoadBalancer IP.
 
 ## Step 7 — the Ingress + TLS
 
