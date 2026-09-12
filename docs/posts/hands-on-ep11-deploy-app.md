@@ -1,6 +1,6 @@
 ---
 date: 2026-09-12
-description: The capstone episode — deploy a real app end-to-end on your homelab: namespace, Deployment, Service, Ingress+TLS, persistent storage, a Secret, and a live metric. Everything from episodes 1–10 in one walkthrough.
+description: "The capstone episode — deploy a real app end-to-end on your homelab: namespace, Deployment, Service, Ingress+TLS, persistent storage, a Secret, and a live metric. Everything from episodes 1–10 in one walkthrough."
 categories: [Homelab, Kubernetes, Hands-On Tutorial]
 tags: [k3s, kubernetes, flux, gitops, helm, deployments, ingress, longhorn, sops, monitoring, homelab]
 comments: true
