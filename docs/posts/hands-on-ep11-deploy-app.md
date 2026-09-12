@@ -344,7 +344,7 @@ resources:
   - secret.sops.yaml
 ```
 
-Then add this directory to your Flux `apps` Kustomization (or create a new one that depends on `infrastructure-config`, mirroring the three-layer structure from episode 4). The exact path depends on how your `clusters/staging/` is laid out, but the pattern is the same: a `path:` that points at your app directory, a `dependsOn:` that ensures the platform is ready first.
+Then add this directory to your own Flux Kustomization (or create a new one that depends on your infrastructure configuration, mirroring the layered structure from episode 4). The exact path depends on how you organized your Flux `clusters/` directory, but the pattern is the same: a `path:` that points at your app directory, a `dependsOn:` that ensures the platform is ready first.
 
 Once Flux has reconciled, you can verify each piece:
 
