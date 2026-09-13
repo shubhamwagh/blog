@@ -71,7 +71,7 @@ metadata:
   namespace: hello
 ```
 
-That's it for the account — we aren't giving this app any special Kubernetes permissions (it doesn't need to list pods or read secrets), so the default ServiceAccount behavior is fine once we name it explicitly. Naming it explicitly is still good practice: it means the pod's `serviceAccountName` is obvious in the Deployment, and it's the first step toward giving the app a scoped identity later if you ever need one (the broker + ServiceAccount pattern from [episode 10: keeping it patched & safe: Renovate, Reloader, CrowdSec](/keeping-it-patched--safe-renovate-reloader-crowdsec/)).
+That's it for the account — we aren't giving this app any special Kubernetes permissions (it doesn't need to list pods or read secrets), so the default ServiceAccount behavior is fine once we name it explicitly via the `serviceAccountName: hello` field in the Deployment. Naming it explicitly is still good practice: it makes the pod's identity obvious, and it's the first step toward giving the app a scoped identity later if you ever need one.
 
 !!! info "Going further — RBAC for apps that need Kubernetes API access"
     If your app ever needs to talk to the Kubernetes API (listing pods, reading config, etc.), create a `ClusterRole` + `ClusterRoleBinding` (or a namespaced `Role` + `RoleBinding`) scoped to exactly what it needs, and bind it to this ServiceAccount. The HomeOps repo does this for apps like homepage that render a cluster overview. For our hello service, no API access is needed, so we stop at the ServiceAccount.
@@ -277,7 +277,7 @@ spec:
 
 - `port: 80` — the Service's port, what other pods and the Ingress talk to.
 - `targetPort: http` — the named port from the Deployment's container (`containerPort: 8080`, named `http`). Using a named target port is more robust than a bare number: if you change the container port later, the Service still works as long as the name stays the same.
-- No `type: LoadBalancer` or `nodePort` — Traefik will route to this Service through the Ingress. The LAN-only pattern from episode 3 means most of your apps are reached via the Cilium VIP (`192.168.1.0/24` in your setup) through Traefik, not directly via a LoadBalancer IP.
+- No `type: LoadBalancer` or `nodePort` — Traefik will route to this Service through the Ingress. The LAN-only pattern from episode 3 means most of your apps are reached via the Cilium VIP (the LAN IP your Cilium L2 load-balancer advertises) through Traefik, not directly via a LoadBalancer IP.
 
 ## Step 7 — the Ingress + TLS
 
@@ -390,7 +390,6 @@ spec:
 ```
 
 This rule fires if the 95th percentile of the app's request latency exceeds 1 second for 5 minutes. The exact metric and threshold are made-up for the tutorial — replace them with whatever your real app exposes.
-
 ### Confirming the chain
 
 To verify the whole alerting pipeline works end to end:
@@ -401,7 +400,7 @@ To verify the whole alerting pipeline works end to end:
 4. **Check Alertmanager** — `kubectl logs -n monitoring statefulset/kube-prometheus-stack-alertmanager` (or the specific pod `kubectl logs -n monitoring kube-prometheus-stack-alertmanager-0`) shows the alert being routed to the ntfy receiver you configured in episode 9.
 
 !!! warning "The Alertmanager pod is a StatefulSet, not a Deployment"
-    In the kube-prometheus-stack chart, Alertmanager runs as a StatefulSet (`kube-prometheus-stack-alertmanager-0`). When you need to read its logs or exec into it, target the StatefulSet pod by name, not `deploy/...`. A `kubectl logs -n monitoring deploy/kube-prometheus-stack-alertmanager` will fail with "no matches for kind Deployment" — the correct target is `kubectl logs -n monitoring statefulset/kube-prometheus-stack-alertmanager` (or the specific pod `kubectl logs -n monitoring kube-prometheus-stack-alertmanager-0`). This is the same gotcha the monitoring episode reviewer caught: the chart's workload kind matters when you write `kubectl exec`/`logs`/`rollout` commands for a reader to paste.
+    In the kube-prometheus-stack chart, Alertmanager runs as a StatefulSet (`alertmanager-kube-prometheus-stack-alertmanager-0`). When you need to read its logs or exec into it, target the StatefulSet by its full name, `alertmanager-kube-prometheus-stack-alertmanager`. This is the same gotcha the monitoring episode reviewer caught: the chart's workload kind matters when you write `kubectl exec`/`logs`/`rollout` commands for a reader to paste.
 
 ## Step 10 — what this gives you
 
@@ -417,7 +416,7 @@ That's the whole platform in one app. Every layer from episodes 1–10 is now do
 
 ## Where to go from here
 
-The next episode — [episode 12: is this "production"? Hardening checklist + what HomeOps adds next] — takes a honest look at what you've built, what's still missing, and what "production-grade for a homelab" really means.
+The next episode — [episode 12: is this "production"? Hardening checklist + what HomeOps adds next] — takes an honest look at what you've built, what's still missing, and what "production-grade for a homelab" really means.
 
 !!! info "Going further — the real HomeOps repo"
     The actual HomeOps repo organizes all of this behind a small set of conventions (a Kustomization per app, a `secret.sops.yaml` per app that needs one, a shared Traefik middleware reference, and a three-layer Flux layering). This episode showed the underlying resources directly so you can see what each one does — the repo's structure is just a consistent way to arrange them. You don't need the repo to follow any of these steps; every manifest here is self-contained.
