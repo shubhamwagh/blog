@@ -627,7 +627,7 @@ homelab.
 The next episode is the capstone: we deploy a real application end-to-end, wiring together
 everything we've built so far — a namespace, a Deployment, a Service, an Ingress with TLS,
 a PersistentVolumeClaim, a SOPS-encrypted Secret, and the monitoring we set up in [episode 9](/monitoring-that-pages-you-prometheus--grafana--ntfy/).
-That's [episode 11: Deploy a real app end-to-end (capstone)] — the link will go live once it's published.
+That's [episode 11: Deploy a real app end-to-end (capstone)](/deploy-a-real-app-end-to-end-capstone/) — the link went live once it was published.
 
 ## Acknowledgments
 
