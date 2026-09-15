@@ -416,4 +416,4 @@ in front of these apps and hand them free Let's Encrypt certificates, all define
 ---
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — continue from
-[episode 3: networking with Cilium + a load-balancer VIP](/networking-with-cilium--a-load-balancer-vip/).*
+[episode 3: networking with Cilium + a load-balancer VIP](/networking-with-cilium--a-load-balancer-vip/).
