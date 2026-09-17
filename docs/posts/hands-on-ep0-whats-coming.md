@@ -118,4 +118,4 @@ Ready? The next post in the series covers [episode 1: hardware and OS baseline](
 
 *This is episode 0 of the [Homelab From Scratch (Hands-On Build)](/) series — a practical,
 step-by-step companion to the separate [Building a Self-Hosted Homelab](/hello-world/) journal,
-|which covers the whys and the story rather than the build steps.
+which covers the whys and the story rather than the build steps.

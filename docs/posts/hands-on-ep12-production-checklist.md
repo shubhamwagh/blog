@@ -146,4 +146,4 @@ If you built along with this series, you now have a cluster that is, by any hone
 
 ---
 
-|*Part of the Homelab From Scratch (Hands-On Build) series — a practical, step-by-step companion to building your own Kubernetes homelab. Start with [episode 0: what's coming](/start-here-a-hands-on-homelab-from-3-mini-pcs/), or jump to [episode 11: deploy a real app end-to-end (capstone)](/deploy-a-real-app-end-to-end-capstone/) if you landed here first.
+*Part of the Homelab From Scratch (Hands-On Build) series — a practical, step-by-step companion to building your own Kubernetes homelab. Start with [episode 0: what's coming](/start-here-a-hands-on-homelab-from-3-mini-pcs/), or jump to [episode 11: deploy a real app end-to-end (capstone)](/deploy-a-real-app-end-to-end-capstone/) if you landed here first.
