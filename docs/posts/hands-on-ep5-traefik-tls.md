@@ -524,4 +524,4 @@ to store data that survives a pod restart.
 ---
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — continue from
-[episode 4: GitOps with Flux](/gitops-with-flux-let-git-run-your-cluster/).*
+[episode 4: GitOps with Flux](/gitops-with-flux-let-git-run-your-cluster/).

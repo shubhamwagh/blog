@@ -239,4 +239,4 @@ again.
 ---
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — continue from
-[episode 2: install k3s across 3 nodes](/install-k3s-across-3-nodes/).*
+|[episode 2: install k3s across 3 nodes](/install-k3s-across-3-nodes/).
