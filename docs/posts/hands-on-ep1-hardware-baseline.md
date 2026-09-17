@@ -227,4 +227,4 @@ a working cluster in minutes.
 ---
 
 *Part of the [Homelab From Scratch (Hands-On Build)](/) series — start with [What's coming: build a
-|real homelab from 3 mini PCs](/start-here-a-hands-on-homelab-from-3-mini-pcs/).
+real homelab from 3 mini PCs](/start-here-a-hands-on-homelab-from-3-mini-pcs/).

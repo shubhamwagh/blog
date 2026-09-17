@@ -420,4 +420,4 @@ in a manifest is visible to anyone with the git repo. We'll fix that by encrypti
 *This is episode 6 of the **Homelab From Scratch (Hands-On Build)** series — a step-by-step
 build of a real k3s homelab. Catch up from
 [episode 1: hardware + OS baseline](/before-you-start-hardware--os-baseline/) if you're
-|jumping in here.
+jumping in here.
