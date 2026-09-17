@@ -1,301 +1,355 @@
 ---
-date: 2026-08-31
-description: A cluster that doesn't tell you when it's on fire is just a silent fire. Stand up Prometheus + Grafana + Alertmanager with Helm, expose Grafana over TLS, and wire alerts into ntfy so your phone actually buzzes when something breaks.
+date: 2026-09-17
+description: "Add Prometheus, Grafana, and Alertmanager→ntfy alerting to your k3s homelab — the stack that pages you when something breaks."
 categories:
   - Homelab
   - Kubernetes
   - Hands-On Tutorial
 tags:
-  - homelab
-  - kubernetes
+  - monitoring
   - prometheus
   - grafana
-  - alertmanager
   - ntfy
-  - monitoring
+  - alerting
+  - kube-prometheus-stack
 comments: true
 series: Homelab From Scratch (Hands-On Build)
 ---
 
 # Monitoring that pages you: Prometheus + Grafana + ntfy
 
-In the [last episode](/remote-access-headscale-self-hosted-tailscale/) you gave the cluster a
-private network that follows you everywhere. Nice. But right now your cluster is a **silent**
-fire — if a node dies, a pod crashes, or the disk fills up, nothing tells you. You find out when
-a service stops working.
+In the last episode, [episode 8: remote access, Headscale (self-hosted Tailscale)](https://blog.shublab.com/remote-access-headscale-self-hosted-tailscale/), we gave ourselves a way into the cluster from anywhere. Now let's make the cluster tell *us* when something is wrong.
 
-That's not "production-grade." Production-grade means the cluster *tells you* the moment
-something is wrong — ideally before users do.
-
-This episode stands up the classic monitoring trio on your k3s cluster:
-
-- **Prometheus** — scrapes and stores metrics from your nodes, pods, and apps.
-- **Grafana** — turns those metrics into dashboards you can actually read.
-- **Alertmanager** — decides when a metric is "bad enough" to page you, and ships that page to
-  **ntfy** so it lands on your phone.
-
-By the end you'll have `kubectl top` working, a Grafana dashboard behind TLS, and a real alert
-buzzing your phone. Let's go.
+A homelab without monitoring is a homelab that finds out about problems from a user complaining — or from a service that has been down for three days. This episode adds the core observability stack: Prometheus for metrics, Grafana for dashboards, and ntfy so an alert actually pages your phone instead of sitting in a log file nobody reads.
 
 <!-- more -->
 
 ## What we're building
 
+Three components, installed as one Helm release into a `monitoring` namespace:
+
 ```mermaid
-flowchart LR
-    A[kube-prometheus-stack<br/>Prometheus] -->|scrape| B[Nodes, pods, apps]
-    A -->|fires alerts| C[Alertmanager]
-    C -->|webhook| D[ntfy topic]
-    D --> E[Your phone]
-    F[Grafana] -->|queries| A
+graph TD
+    Prometheus["Prometheus<br/>scrapes metrics"] --> Alertmanager["Alertmanager<br/>evaluates rules"]
+    Alertmanager --> Grafana["Grafana<br/>dashboards + UI"]
+    Alertmanager --> NTFY["ntfy<br/>pushes to your phone"]
+    Prometheus --> Grafana
+    style Alertmanager fill:#f9f,stroke:#333
+    style NTFY fill:#bbf,stroke:#333
 ```
 
-Everything runs inside the cluster you already built. Grafana gets a TLS ingress reusing the
-Traefik + cert-manager setup from [episode 5](/ingress--free-tls-traefik--cert-manager/), and
-the alert "pager" is just an ntfy topic you subscribe to.
+- **kube-prometheus-stack** — a single Helm chart that brings Prometheus, Alertmanager, Grafana, node exporter, kube-state-metrics, and the Prometheus Operator CRDs together. One HelmRelease, one namespace.
+- **Alertmanager** — the part that decides *what* is worth paging. Prometheus fires an alert; Alertmanager dampens, groups, and routes it somewhere.
+- **ntfy** — a lightweight pub/sub notification service. Alertmanager sends a POST to ntfy's HTTP API, and ntfy pushes the message to anything subscribed (phone app, web UI, email, Discord, etc.).
 
-## Step 1 — `kubectl top` with metrics-server
+## Before you begin
 
-Prometheus can scrape a lot, but Kubernetes itself needs a way to report CPU/memory usage. That's
-`metrics-server`. It's a tiny, quick win, so we do it first.
+You should have a working k3s cluster with Cilium, Flux, and an accessible `monitoring` namespace. If you're following along from the start, you need at least:
+
+- k3s installed across your nodes ([episode 2: install k3s across 3 nodes](https://blog.shublab.com/install-k3s-across-3-nodes/))
+- Cilium as the CNI ([episode 3: networking with Cilium + a load-balancer VIP](https://blog.shublab.com/networking-with-cilium--a-load-balancer-vip/))
+- Flux bootstrapping your cluster from git ([episode 4: GitOps with Flux](https://blog.shublab.com/gitops-with-flux-let-git-run-your-cluster/))
+
+You also need `kubectl` pointed at your cluster and `helm` available. The snippets below use raw `kubectl` and `helm` — if you're following along with the real HomeOps repo, note that HomeOps wraps these behind a Makefile, but the commands here are what actually run.
+
+## Step 1 — Confirm the monitoring namespace exists
+
+The rest of this episode assumes a `monitoring` namespace. If you haven't created it yet:
 
 ```bash
-helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-helm repo update
-
-kubectl create namespace kube-system 2>/dev/null || true
-
-helm install metrics-server metrics-server/metrics-server \
-  -n kube-system \
-  --set args[0]=--kubelet-insecure-tls
+kubectl create namespace monitoring
 ```
 
-!!! warning "Why `--kubelet-insecure-tls`?"
-    On k3s the kubelet serves its metrics endpoint with a self-signed certificate that
-    metrics-server doesn't trust by default. This flag tells it to skip that check. It's fine for
-    a homelab; for a stricter setup you'd wire up proper kubelet certs (a "going further" topic).
+In a Flux-managed cluster you'd usually declare the namespace in git (a `namespace.yaml` in your `monitoring/` Kustomization), but for a one-off manual setup `kubectl create namespace` is fine.
 
-Give it a minute, then:
-
-```bash
-kubectl top nodes
-kubectl top pods -A
-```
-
-If you see numbers instead of `error: metrics not available`, you're golden.
-
-## Step 2 — Prometheus + Grafana + Alertmanager
-
-We'll use the `kube-prometheus-stack` Helm chart. It bundles Prometheus, Grafana, Alertmanager,
-plus a bunch of sane default alert rules and dashboards.
+## Step 2 — Add the Prometheus community Helm repo
 
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
-
-kubectl create namespace monitoring
 ```
 
-Create the namespace, then a Secret for the Grafana admin password (we'll point Grafana at it so
-we don't hard-code the password in a values file):
+## Step 3 — Install kube-prometheus-stack
 
-```bash
-kubectl create secret generic grafana-admin-secret -n monitoring \
-  --from-literal=admin-user=admin \
-  --from-literal=admin-password='ChangeMeStrong123!'
-```
+This is the big one. The chart bundles Prometheus, Alertmanager, Grafana, node exporter, kube-state-metrics, and the Prometheus Operator. We install it once and let it manage the whole stack.
 
-!!! tip "Harden this later with SOPS"
-    That password is sitting in a plain Kubernetes Secret right now. Episode
-    [7](/secrets-without-plaintext-sops--age/) showed you how to encrypt secrets in Git with
-    SOPS + age — you can move this into your cluster repo the same way. For now, a plain Secret
-    keeps the tutorial moving.
+For anything beyond the defaults, a values file is much easier to read and edit than a wall of `--set` flags. Save this as `monitoring-values.yaml`:
 
-Now write a values file. This is the part you'll actually tune:
-
-```bash
-cat > monitoring-values.yaml <<'EOF'
-grafana:
-  admin:
-    existingSecret: grafana-admin-secret
-    userKey: admin-user
-    passwordKey: admin-password
-  ingress:
-    enabled: false
-
-prometheus:
-  prometheusSpec:
-    retention: 14d
-    storageSpec:
+```yaml
+# monitoring-values.yaml
+alertmanager:
+  alertmanagerSpec:
+    replicas: 1
+    storage:
       volumeClaimTemplate:
+        metadata:
+          labels:
+            recurring-job.longhorn.io/source: "enabled"
+            recurring-job.longhorn.io/snapshot-daily: "enabled"
         spec:
           storageClassName: longhorn
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 50Gi
+              storage: 10Gi
 
-alertmanager:
-  alertmanagerSpec:
+prometheus:
+  prometheusSpec:
     replicas: 1
-  config:
-    global:
-      resolve_timeout: 5m
+    retention: 14d
+    retentionSize: 90Gi
+    storageSpec:
+      volumeClaimTemplate:
+        metadata:
+          labels:
+            recurring-job.longhorn.io/source: "enabled"
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 100Gi
+
+grafana:
+  enabled: true
+  adminUser: admin
+  ingress:
+    enabled: false
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+
+defaultRules:
+  create: true
+```
+
+Then install:
+
+```bash
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  -f monitoring-values.yaml
+```
+
+A few things worth calling out:
+
+- **Storage is Longhorn.** Both Prometheus and Alertmanager get a `volumeClaimTemplate` backed by the `longhorn` storage class, so their on-disk metrics survive pod restarts and get replicated across nodes. If you don't have Longhorn yet, see [episode 6: distributed storage with Longhorn](https://blog.shublab.com/distributed-storage-with-longhorn/).
+- **Retention.** 14 days of metrics with a 90 GB size cap keeps Prometheus from eating your disk. Adjust to your cluster size and disk capacity.
+- **Grafana ingress is disabled.** We don't expose Grafana publicly in this setup — it's reachable over the cluster network (and, in a real homelab, over your Tailscale / Headscale tailnet). Exposing Grafana with a public TLS ingress is a separate decision with its own auth story; we're leaving that for another day.
+
+Wait for the pods to come up:
+
+```bash
+kubectl get pods -n monitoring -w
+```
+
+You should see `kube-prometheus-stack-operator-*`, `prometheus-kube-prometheus-stack-0`, `alertmanager-kube-prometheus-stack-alertmanager-0`, `grafana-*`, and several node-exporter / kube-state-metrics pods all become `Running`.
+
+## Step 4 — Log into Grafana
+
+Port-forward Grafana locally to grab the admin password and log in:
+
+```bash
+kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80
+```
+
+The admin username is `admin`. The password is whatever you set in the Helm values (or, if you didn't set one explicitly, the chart generates a random one and stores it in a Secret called `grafana-admin-secret` in the `monitoring` namespace — this is the chart's default Secret name for the admin password). Retrieve the generated password with:
+
+```bash
+kubectl get secret -n monitoring grafana-admin-secret -o jsonpath='{.data.admin-password}' | base64 -d
+```
+
+Open `http://localhost:3000` in your browser, log in, and change the password when prompted. Grafana's built-in dashboards (from the `defaultRules.create=true` flag) will already be populated with Prometheus data — check the "Prometheus / Kubernetes / Compute Resources" dashboards to see your nodes and pods showing live metrics.
+
+## Step 5 — Understand what you're seeing
+
+Before we add alerts, it helps to know what the stack is already doing for free.
+
+- **Prometheus** scrapes metrics from every node (via node exporter), every pod that exposes a `/metrics` endpoint, and the Kubernetes control plane (via kube-state-metrics). The `kube-prometheus-stack` default rules already define a set of sensible alerts — things like "Pods are failing," "Node is down," "Insufficient memory," and "Cluster is in hybrid mode" — which you can see in Alertmanager under the "Pending" / "Active" tabs.
+- **Alertmanager** receives those alerts, groups them, and routes them somewhere. Right now it has no receiver configured, so alerts are visible in the Grafana Alertmanager UI but nobody gets paged. That's the next step.
+- **Grafana** is the visualization layer. The default dashboards are useful, but the real win comes when you build a dashboard that answers "is my homelab healthy?" in a single glance.
+
+## Step 6 — Wire Alertmanager to ntfy
+
+This is where monitoring stops being a dashboard nobody looks at and starts being a page that actually gets your attention.
+
+### Why ntfy
+
+ntfy is a simple pub/sub notification service. You POST a message to a topic, and anyone subscribed to that topic (phone app, web UI, webhook, email, Discord, etc.) receives it. For a homelab it's a good fit because:
+
+- It's lightweight — a single deployment, no heavy dependencies.
+- It has a free public tier (`ntfy.sh`) if you don't want to self-host, plus a self-hosted option if you do.
+- Alertmanager can talk to it over plain HTTP with a bearer token.
+
+> !!! info "ntfy is already part of our setup"
+> In our cluster, ntfy is deployed as its own app (separate from the monitoring stack) and reachable over the tailnet. This episode wires Alertmanager to it; if you haven't deployed ntfy yet, see the ntfy deployment docs for your setup, or use the public `ntfy.sh` tier for testing. The Alertmanager config below works with either.
+
+### Create an Alertmanager config that routes to ntfy
+
+The Prometheus Operator manages Alertmanager via an `Alertmanager` CRD — a custom Kubernetes resource. The config that Alertmanager uses lives in a Kubernetes Secret. We'll create one that sends a message to an ntfy topic when an alert fires.
+
+Save this as `alertmanager-config.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+type: Opaque
+stringData:
+  alertmanager.yaml: |
     route:
-      receiver: ntfy-webhook
-      group_by: ['alertname', 'namespace']
+      group_by: ['alertname', 'cluster']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 4h
+      receiver: 'ntfy'
+      routes:
+        - match:
+            severity: critical
+          receiver: 'ntfy-critical'
     receivers:
-      - name: ntfy-webhook
-        webhook_configs:
-          - url: "https://ntfy.sh/<your-topic>"
-            send_resolved: true
-EOF
+      - name: 'ntfy'
+        ntfy:
+          url: 'https://ntfy.sh'
+          topic: 'homelab-alerts'
+          headers:
+            Authorization: 'Bearer YOUR_NTFY_TOKEN'
+      - name: 'ntfy-critical'
+        ntfy:
+          url: 'https://ntfy.sh'
+          topic: 'homelab-alerts-critical'
+          headers:
+            Authorization: 'Bearer YOUR_NTFY_TOKEN'
 ```
 
-Install it:
+Replace `YOUR_NTFY_TOKEN` with an ntfy auth token if you're using a protected topic, and adjust the `url` / `topic` values to match your ntfy setup (self-hosted endpoint and topic name). If you're using the public `ntfy.sh` with a public topic, you can omit the `Authorization` header — but a public topic means anyone who guesses the topic name can read your alerts, so a token-protected topic is the better default.
+
+> !!! warning "Public ntfy topics are readable by anyone"
+> If you use a public `ntfy.sh` topic without a token, anyone who knows the topic name can subscribe and read every alert you send — including alert names that may hint at your infrastructure. Use a token-protected topic or self-host ntfy if you want the alerts to stay between you and your cluster.
+
+Apply the config Secret:
 
 ```bash
-helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
-  -n monitoring -f monitoring-values.yaml
+kubectl apply -f alertmanager-config.yaml
 ```
 
-This pulls a few images and starts a dozen-ish pods. Watch them come up:
+Now tell the Alertmanager CRD to use our config Secret instead of the default. The `kube-prometheus-stack` chart creates an `Alertmanager` resource named `kube-prometheus-stack-alertmanager` in the `monitoring` namespace. Rather than patching it with inline JSON, the cleaner approach is to add the config reference directly to your Helm values file and re-run the upgrade — that way the wiring is declarative and survives chart upgrades:
 
-```bash
-kubectl get pods -n monitoring
-kubectl get svc -n monitoring
+```yaml
+# Add to monitoring-values.yaml
+alertmanager:
+  alertmanagerSpec:
+    useExistingSecret: true
+    configSecret: alertmanager-config
 ```
 
-You're looking for `Running` on the `prometheus`, `grafana`, and `alertmanager` pods. If a pod is
-`CrashLoopBackOff`, check its logs — usually it's the PVC not binding (did Longhorn finish
-[episode 6](/distributed-storage-with-longhorn/)?) or a missing Secret.
-
-!!! info "The GitOps way (what HomeOps actually does)"
-    In the real HomeOps repo this isn't a `helm install` — it's two small manifests committed to
-    Git and reconciled by Flux: a `HelmRepository` pointing at
-    `https://prometheus-community.github.io/helm-charts`, and a `HelmRelease` carrying the same
-    values. That's the exact same install, just driven by Git instead of your terminal. If you
-    followed the Flux path from episode 4, dropping those two files into your cluster repo gives
-    you the identical result and an automatic upgrade every time the chart bumps.
-
-## Step 3 — Open Grafana over TLS
-
-You could `kubectl port-forward` forever, but you already built Traefik + cert-manager, so let's
-use them. Create an ingress for Grafana:
+Then:
 
 ```bash
-cat > grafana-ingress.yaml <<'EOF'
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  -f monitoring-values.yaml
+```
+
+Wait a moment, then confirm Alertmanager has picked up the new config:
+
+```bash
+kubectl logs -n monitoring -l app.kubernetes.io/name=alertmanager -f
+```
+
+You should see the Alertmanager pods reload and the new receiver (`ntfy`) listed in their logs.
+
+### Test the pipeline end to end
+
+Fire a test alert to make sure the wiring works. The easiest way is to create a `PrometheusRule` that intentionally fires:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
 metadata:
-  name: grafana
+  name: test-alert
   namespace: monitoring
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-security-headers@kubernetescrd
 spec:
-  ingressClassName: traefik
-  tls:
-    - hosts:
-        - grafana.example.com
-      secretName: grafana-tls
-  rules:
-    - host: grafana.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: kube-prometheus-stack-grafana
-                port:
-                  number: 80
-EOF
-
-kubectl apply -f grafana-ingress.yaml
+  groups:
+    - name: test
+      rules:
+        - alert: TestAlertFromHomelab
+          expr: vector(1)
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Test alert — if you see this, the pipeline works"
 ```
 
-Two things you must have done from earlier episodes:
-
-- Point DNS `grafana.example.com` → your Traefik load-balancer VIP (the LAN IP Cilium handed
-  Traefik back in [episode 3](/networking-with-cilium--a-load-balancer-vip/)).
-- The `letsencrypt-prod` ClusterIssuer from [episode 5](/ingress--free-tls-traefik--cert-manager/)
-  must exist. If you skipped that middleware, just delete the `router.middlewares` annotation
-  line.
-
-Open `https://grafana.example.com`, log in as `admin` with your password, and you'll land on a
-Grafana pre-loaded with Kubernetes dashboards. 🎉
-
-## Step 4 — Make it actually page you
-
-Monitoring you have to remember to check isn't monitoring — it's a dashboard. The whole point is
-the cluster calls *you*.
-
-1. Install the **ntfy** app on your phone (iOS/Android/F-Droid) or just open
-   `https://ntfy.sh/<your-topic>` in a browser.
-2. Pick a random topic name and replace `<your-topic>` in the values file above with it. (No
-   signup, no server to run — `ntfy.sh` is a free public instance. For a private setup you can
-   self-host ntfy on the cluster later — see "Going further".)
-3. Re-apply the values so Alertmanager picks up the new receiver:
+Apply it:
 
 ```bash
-helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
-  -n monitoring -f monitoring-values.yaml
+kubectl apply -f test-prometheus-rule.yaml
 ```
 
-Now, whenever one of the default alert rules fires (a pod crash-looping, a node down, a PVC out
-of space, etc.), Alertmanager POSTs it to your ntfy topic and your phone buzzes.
-
-!!! info "The alert message will be JSON — and that's OK"
-    Alertmanager sends its native JSON payload to the webhook. ntfy delivers that JSON as the
-    notification body, so the message looks a bit noisy. It's 100% functional and great for a
-    first cut. If you want nicely formatted "🚨 Pod crash-looping in namespace X" messages, run a
-    tiny `prometheus-webhook-ntfy` bridge between Alertmanager and ntfy that reformats the
-    payload — a common, well-documented add-on you can drop in once the basic pipeline works.
-
-## Step 5 — Prove it works (don't wait for a real outage)
-
-You don't have to break something to test the page. Inject a synthetic alert straight into
-Alertmanager:
+Within a minute, Prometheus should evaluate the rule, fire the alert, and Alertmanager should route it to ntfy. You should see a message arrive in your ntfy topic (phone app, web UI, or wherever you're subscribed). After you confirm it works, delete the test rule:
 
 ```bash
-kubectl exec -n monitoring kube-prometheus-stack-alertmanager-0 -c alertmanager -- \
-  amtool alert add alertname=TestAlert severity=critical instance=demo
+kubectl delete prometheusrule test-alert -n monitoring
 ```
 
-Within ~30 seconds your phone should buzz with the `TestAlert`. Resolve it:
+> !!! tip "Going further — what to alert on"
+> `vector(1)` is a test that always fires. Real alerts come from the default rules the chart already ships (pod failures, node down, disk pressure, etc.) plus rules you add for the things *your* homelab cares about — for example, "Longhorn replica is not healthy," "cert-manager certificate is expiring soon," or "the blog is returning 5xx." Start with the defaults, then add one or two rules that matter to you, and watch them in Alertmanager's "Pending" state before they fire.
 
-```bash
-kubectl exec -n monitoring kube-prometheus-stack-alertmanager-0 -c alertmanager -- \
-  amtool alert query
-```
+## Step 7 — Set up a simple Grafana dashboard
 
-If the buzz arrived, the full chain — Prometheus ➜ Alertmanager ➜ ntfy ➜ you — is live.
+Grafana's default dashboards are useful, but a single "homelab health" dashboard is what you'll actually look at. Create one in Grafana's UI:
 
-## Going further
+1. In Grafana, go to **Dashboards → New dashboard → Add visualization**.
+2. Select the Prometheus data source.
+3. Add a panel for "Cluster node CPU usage" with the query:
+   ```
+   100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+   ```
+4. Add a panel for "Node memory usage":
+   ```
+   (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100
+   ```
+5. Add a panel for "Pod restarts in the last hour":
+   ```
+   sum by (pod) (rate(kube_pod_container_status_restarts_total[1h])) * 60
+   ```
+6. Save the dashboard as "Homelab Health."
 
-- **Self-host ntfy** on the cluster instead of `ntfy.sh` (it's just another app behind Traefik,
-  exactly like the capstone in a later episode). Then your alerts never leave your infrastructure.
-- **Encrypt the Grafana password and ntfy topic** with SOPS + age ([episode 7](/secrets-without-plaintext-sops--age/)).
-- **Write your own alerts** with a `PrometheusRule` — e.g. "page me if any Ingress has been
-  returning 5xx for 5 minutes."
-- **Build a status dashboard** in Grafana for the whole house: internet uptime, disk, temperature.
+That's a starting point. The dashboards that matter are the ones that answer your specific questions — "are my nodes healthy?", "is storage OK?", "did an app just crash?" — so build outward from there.
+
+## Step 8 — What about persistent storage for the monitoring stack?
+
+Both Prometheus and Alertmanager store data on Longhorn PersistentVolumeClaims (the `volumeClaimTemplate` blocks in the Helm values). That means:
+
+- Their metrics survive pod restarts and node failure.
+- Longhorn replicates the data across nodes, so a single-node loss doesn't lose your metrics history.
+- The `snapshot-daily` label on the PVCs (if you have the Longhorn recurring-jobs controller set up) gives you daily snapshots you can roll back if needed.
+
+If you're not using Longhorn, swap the `storageClassName` to whatever storage you do have — but be aware that without replicated storage, a node loss can take your metrics history with it.
 
 ## Recap
 
-You now have a cluster that watches itself and tugs your sleeve when it's unhappy:
+At this point you have:
 
-- `metrics-server` → `kubectl top` works.
-- `kube-prometheus-stack` → Prometheus, Grafana, Alertmanager, default alert rules + dashboards.
-- Grafana behind Traefik + TLS, reusing episode 5's ingress pattern.
-- Alertmanager → ntfy → your phone, verified with a test alert.
+- **Prometheus** scraping your cluster's metrics.
+- **Grafana** giving you dashboards (including the defaults from the chart).
+- **Alertmanager** evaluating alert rules and routing them.
+- **ntfy** pushing alerts to your phone (or wherever you subscribe).
 
-That's the difference between "a cluster" and "a cluster I can trust overnight."
+The stack doesn't page you yet unless you've wired Alertmanager to a receiver — which is exactly what step 6 does. Once that's in place, a pod failure or a node going down will actually reach you instead of sitting in a log.
+
+## What's next
+
+Monitoring tells you when things go wrong; the next episode is about keeping things from going wrong in the first place — automated patching with Renovate, auto-reload on config changes with Reloader, and a Web Application Firewall with CrowdSec. [episode 10: keeping it patched & safe — Renovate, Reloader, CrowdSec](https://blog.shublab.com/keeping-it-patched--safe-renovate-reloader-crowdsec/) walks through all three.
 
 ---
 
-**Previous:** [Remote access: Headscale (self-hosted Tailscale)](/remote-access-headscale-self-hosted-tailscale/)
-**Next up:** [episode 10: Keeping it patched & safe — Renovate, Reloader, CrowdSec](/keeping-it-patched--safe-renovate-reloader-crowdsec/)
+*This is episode 9 of the [Homelab From Scratch (Hands-On Build)](https://blog.shublab.com/start-here-a-hands-on-homelab-from-3-mini-pcs/) series.*
