@@ -352,4 +352,4 @@ Monitoring tells you when things go wrong; the next episode is about keeping thi
 
 ---
 
-*This is episode 9 of the [Homelab From Scratch (Hands-On Build)](https://blog.shublab.com/start-here-a-hands-on-homelab-from-3-mini-pcs/) series.*
+*This is episode 9 of the [Homelab From Scratch (Hands-On Build)](https://blog.shublab.com/start-here-a-hands-on-homelab-from-3-mini-pcs/) series.
