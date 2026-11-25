@@ -9,3 +9,6 @@ RUN mkdocs build
 
 FROM nginx:alpine
 COPY --from=builder /src/site /usr/share/nginx/html
+
+# Relative Location on directory redirects; Cloudflare terminates TLS, so absolute ones point at http://
+RUN echo "absolute_redirect off;" > /etc/nginx/conf.d/absolute-redirect.conf
