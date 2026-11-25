@@ -1,5 +1,5 @@
 ---
-date: 2026-09-17
+date: 2026-08-31
 description: "Add Prometheus, Grafana, and Alertmanager→ntfy alerting to your k3s homelab — the stack that pages you when something breaks."
 categories:
   - Homelab
